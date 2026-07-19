@@ -62,6 +62,9 @@ test("employer runs the AI Screening Agent, sees ranked results, and can approve
   await marcusCard.getByRole("button", { name: "Approve & send" }).click();
   await expect(marcusCard.getByText("✓ Outreach sent")).toBeVisible({ timeout: 20_000 });
 
+  // Dismiss now confirms via a native confirm() dialog before submitting —
+  // Playwright auto-dismisses (cancels) unhandled dialogs by default.
+  page.once("dialog", (dialog) => dialog.accept());
   await danaCard.getByRole("button", { name: "Dismiss" }).click();
   await expect(danaCard.getByText("Dismissed")).toBeVisible({ timeout: 20_000 });
 
