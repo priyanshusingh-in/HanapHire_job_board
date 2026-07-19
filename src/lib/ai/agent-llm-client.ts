@@ -19,7 +19,10 @@ const PROVIDER_DEFS: Record<ProviderName, ProviderDef> = {
     baseUrl: "https://generativelanguage.googleapis.com/v1beta/openai",
     keysEnv: "GEMINI_API_KEYS",
     modelEnv: "GEMINI_MODEL",
-    defaultModel: "gemini-2.0-flash",
+    // "gemini-2.0-flash" has zero free-tier quota for new accounts as of
+    // this build (verified live) — "-latest" aliases track whatever's
+    // current, so prefer those over pinned version numbers here.
+    defaultModel: "gemini-flash-latest",
   },
   groq: {
     baseUrl: "https://api.groq.com/openai/v1",
