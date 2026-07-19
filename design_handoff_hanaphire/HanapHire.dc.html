@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,500;0,600;1,400;1,500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "IBM Plex Sans", sans-serif; color: #15130f; background: #faf8f4; -webkit-font-smoothing: antialiased; }
+  a { color: #c1502c; text-decoration: none; }
+  a:hover { color: #8f3a1e; text-decoration: underline; }
+  button { font-family: inherit; }
+  input, select, textarea { font-family: inherit; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes menuLinkIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes overlayIn { from { opacity: 0; } to { opacity: 1; } }
+</style>
+</helmet>
+
+<div style="min-height:100vh;background:#faf8f4;">
+
+<sc-if value="{{navOpen}}" hint-placeholder-val="{{false}}">
+<div style="position:fixed;inset:0;z-index:100;background:#201a15;animation:overlayIn 0.35s ease;display:flex;flex-direction:column;">
+  <div style="max-width:1200px;width:100%;margin:0 auto;padding:20px 32px;display:flex;justify-content:space-between;align-items:center;">
+    <img src="assets/logo-cropped.png" alt="HanapHire" style="height:32px;display:block;filter:brightness(0) invert(1);"/>
+    <button onClick="{{toggleNav}}" style="background:transparent;border:1px solid rgba(245,243,238,0.3);color:#f5f3ee;width:38px;height:38px;border-radius:999px;font:400 18px 'IBM Plex Sans';cursor:pointer;">✕</button>
+  </div>
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center;max-width:900px;width:100%;margin:0 auto;padding:0 32px;">
+    <sc-for list="{{menuLinks}}" as="link" hint-placeholder-count="3">
+      <a onClick="{{link.onClick}}" style="{{link.style}}">{{link.label}}</a>
+    </sc-for>
+    <div style="display:flex;gap:16px;margin-top:48px;animation:menuLinkIn 0.5s ease 0.4s both;">
+      <button onClick="{{goLoginAndClose}}" style="padding:12px 22px;border-radius:5px;border:1px solid rgba(245,243,238,0.28);background:transparent;font:600 14px 'IBM Plex Sans';color:#f5f3ee;cursor:pointer;">Log in</button>
+      <button onClick="{{goSignupAndClose}}" style="{{ctaButtonStyle}}">Post a Job</button>
+    </div>
+  </div>
+  <div style="max-width:1200px;width:100%;margin:0 auto;padding:24px 32px 32px;">
+    <a onClick="{{goAdminAndClose}}" style="cursor:pointer;font:400 13.5px 'IBM Plex Sans';color:#6b675e;">Admin console →</a>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{isMarketing}}" hint-placeholder-val="{{true}}">
+<div>
+  <div onClick="{{goLanding}}" style="{{navWordmarkStyle}}"><img src="assets/logo-cropped.png" alt="HanapHire" style="height:26px;display:block;filter:brightness(0) invert(1);"/></div>
+  <button onClick="{{toggleNav}}" style="{{navBtnStyle}}">
+    <span style="display:flex;flex-direction:column;gap:5px;">
+      <span style="width:16px;height:1.5px;background:#f5f3ee;display:block;"></span>
+      <span style="width:16px;height:1.5px;background:#f5f3ee;display:block;"></span>
+    </span>
+  </button>
+
+  <sc-if value="{{isLanding}}">
+  <main>
+    <section style="background:#201a15;">
+      <div style="max-width:820px;margin:0 auto;padding:120px 32px 120px;text-align:center;">
+        <div style="font:italic 400 18px 'Newsreader';color:#c1502c;margin-bottom:26px;">On-demand hiring, made instant</div>
+        <h1 style="font:500 66px/1.1 'Newsreader';letter-spacing:-0.01em;margin:0 0 26px;color:#f5f3ee;">Get hired today.<br/><span style="font-style:italic;">Hire in minutes.</span></h1>
+        <p style="font:400 18px/1.7 'IBM Plex Sans';color:rgba(245,243,238,0.68);max-width:520px;margin:0 auto 40px;">HanapHire connects gig and hourly workers with businesses that need them right now — same-day shifts, verified profiles, and instant applications.</p>
+        <div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-bottom:60px;">
+          <button onClick="{{goListings}}" style="{{ctaButtonStyleLg}}">Find work near you</button>
+          <button onClick="{{goEmployerLogin}}" style="padding:15px 26px;border-radius:5px;border:1px solid rgba(245,243,238,0.28);background:transparent;font:600 15px 'IBM Plex Sans';color:#f5f3ee;cursor:pointer;">Post a job free</button>
+        </div>
+        <div style="display:flex;justify-content:center;gap:56px;padding-top:36px;border-top:1px solid rgba(245,243,238,0.14);">
+          <sc-for list="{{trustStats}}" as="stat" hint-placeholder-count="4">
+            <div>
+              <div style="font:500 28px 'Newsreader';color:#f5f3ee;">{{stat.value}}</div>
+              <div style="font:400 12.5px 'IBM Plex Sans';color:rgba(245,243,238,0.55);margin-top:4px;">{{stat.label}}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+
+    <section style="max-width:900px;margin:0 auto;padding:24px 32px 0;">
+      <div style="border:1px solid rgba(21,19,15,0.14);overflow:hidden;margin-top:-64px;position:relative;z-index:2;box-shadow:0 24px 60px rgba(21,19,15,0.12);background:#fdfcfa;padding:36px 40px 40px;">
+        <div style="display:flex;justify-content:center;margin-bottom:22px;">
+          <div style="display:inline-flex;border:1px solid rgba(21,19,15,0.16);border-radius:999px;padding:4px;">
+            <button onClick="{{setHeroModeSeeker}}" style="{{heroModeSeekerStyle}}">Looking for work</button>
+            <button onClick="{{setHeroModeEmployer}}" style="{{heroModeEmployerStyle}}">Hiring</button>
+          </div>
+        </div>
+        <div style="font:italic 400 18px 'Newsreader';color:#5c584f;margin-bottom:18px;text-align:center;">{{heroPrompt}}</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-bottom:28px;">
+          <sc-for list="{{heroChips}}" as="chip" hint-placeholder-count="6">
+            <button onClick="{{chip.onClick}}" style="{{chip.style}}">{{chip.label}}</button>
+          </sc-for>
+        </div>
+
+        <sc-if value="{{isHeroModeSeeker}}">
+        <div style="{{heroMatchesGridStyle}}">
+          <sc-for list="{{heroMatches}}" as="job" hint-placeholder-count="3">
+            <div onClick="{{job.onSelect}}" style="padding:18px;background:#fff;cursor:pointer;">
+              <div style="font:500 15.5px 'Newsreader';margin-bottom:4px;">{{job.title}}</div>
+              <div style="font:400 12.5px 'IBM Plex Sans';color:#5c584f;margin-bottom:10px;">{{job.company}} · {{job.location}}</div>
+              <div style="font:500 17px 'Newsreader';">{{job.pay}}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="text-align:center;margin-top:22px;">
+          <button onClick="{{onSeeAllHeroMatches}}" style="{{ctaButtonStyle}}">{{heroSeeAllLabel}}</button>
+        </div>
+        </sc-if>
+
+        <sc-if value="{{isHeroModeEmployer}}">
+        <div style="text-align:center;font:500 15px 'IBM Plex Sans';color:#3a3830;margin-bottom:18px;">{{heroWorkerCountLabel}}</div>
+        <div style="{{heroWorkersGridStyle}}">
+          <sc-for list="{{heroWorkerSample}}" as="w" hint-placeholder-count="3">
+            <div style="padding:18px;background:#fff;text-align:center;">
+              <div style="width:42px;height:42px;border-radius:999px;background:#f0eee7;font:500 14px 'Newsreader';display:flex;align-items:center;justify-content:center;margin:0 auto 10px;">{{w.initial}}</div>
+              <div style="font:500 15px 'Newsreader';margin-bottom:3px;">{{w.name}}</div>
+              <div style="font:400 12px 'IBM Plex Sans';color:#5c584f;">{{w.years}} · ★ {{w.rating}}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="text-align:center;margin-top:22px;">
+          <button onClick="{{goEmployerLogin}}" style="{{ctaButtonStyle}}">{{heroPostJobLabel}}</button>
+        </div>
+        </sc-if>
+      </div>
+    </section>
+
+    <section style="max-width:900px;margin:0 auto;padding:104px 32px 88px;">
+      <h2 style="font:500 34px 'Newsreader';letter-spacing:-0.01em;margin:0 0 40px;">How it works</h2>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:40px;">
+        <sc-for list="{{howItWorksSeeker}}" as="step" hint-placeholder-count="3">
+          <div>
+            <div style="font:italic 400 15px 'Newsreader';color:#c1502c;margin-bottom:14px;">{{step.num}}</div>
+            <div style="font:500 19px 'Newsreader';margin-bottom:10px;">{{step.title}}</div>
+            <div style="font:400 14.5px/1.6 'IBM Plex Sans';color:#5c584f;">{{step.body}}</div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <section style="max-width:900px;margin:0 auto;padding:0 32px 96px;">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:32px;">
+        <h2 style="font:500 34px 'Newsreader';letter-spacing:-0.01em;margin:0;">Featured jobs</h2>
+        <a onClick="{{goListings}}" style="cursor:pointer;font:italic 400 16px 'Newsreader';">Browse all →</a>
+      </div>
+      <div style="display:flex;flex-direction:column;">
+        <sc-for list="{{featuredJobs}}" as="job" hint-placeholder-count="3">
+          <div onClick="{{job.onSelect}}" style="padding:26px 0;border-top:1px solid rgba(21,19,15,0.14);cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:20px;">
+            <div>
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+                <div style="font:500 19px 'Newsreader';">{{job.title}}</div>
+                <sc-if value="{{job.urgent}}"><span style="font:500 11px 'IBM Plex Sans';letter-spacing:0.03em;text-transform:uppercase;color:#b5730b;border-bottom:1px solid #b5730b;padding-bottom:2px;">Urgent</span></sc-if>
+              </div>
+              <div style="font:400 13.5px 'IBM Plex Sans';color:#5c584f;">{{job.company}} · {{job.location}} · {{job.shift}}</div>
+            </div>
+            <div style="font:500 22px 'Newsreader';white-space:nowrap;">{{job.pay}}</div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <section style="background:#201a15;padding:88px 32px;">
+      <div style="max-width:900px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:56px;">
+        <div>
+          <div style="font:italic 400 20px 'Newsreader';color:#e5e3dd;line-height:1.6;margin-bottom:20px;">"I picked up a shift the same afternoon I applied. No waiting around for a callback — I just showed up and got paid."</div>
+          <div style="font:500 14px 'IBM Plex Sans';color:#f5f3ee;">Marisol Tan</div><div style="font:400 13px 'IBM Plex Sans';color:#8a857a;margin-top:2px;">Event Setup Crew, Denver</div>
+        </div>
+        <div>
+          <div style="font:italic 400 20px 'Newsreader';color:#e5e3dd;line-height:1.6;margin-bottom:20px;">"We filled an overnight warehouse shift in under an hour. The AI screening cut our review time from days to minutes."</div>
+          <div style="font:500 14px 'IBM Plex Sans';color:#f5f3ee;">Owen Marsh</div><div style="font:400 13px 'IBM Plex Sans';color:#8a857a;margin-top:2px;">Ops Manager, Fulcrum Distribution</div>
+        </div>
+      </div>
+    </section>
+
+    <section style="max-width:900px;margin:0 auto;padding:96px 32px;display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;">
+      <div>
+        <div style="font:italic 400 16px 'Newsreader';color:#2f7d78;margin-bottom:20px;">AI Screening Agent</div>
+        <h2 style="font:500 32px/1.2 'Newsreader';letter-spacing:-0.01em;margin:0 0 18px;">Hiring, without<br/>the backlog.</h2>
+        <p style="font:400 16px/1.6 'IBM Plex Sans';color:#5c584f;margin:0 0 26px;max-width:400px;">Post a job and our screening agent works in the background — reading your requirements, ranking every applicant, and drafting outreach to your top matches so you can hire in minutes, not days.</p>
+        <button onClick="{{goEmployerLogin}}" style="{{ctaButtonStyle}}">See it in action</button>
+      </div>
+      <div style="border:1px solid rgba(21,19,15,0.14);aspect-ratio:4/3;overflow:hidden;box-shadow:0 20px 50px rgba(21,19,15,0.1);">
+        <img src="assets/ai-agent-screenshot.png" alt="AI Screening Agent ranking view" style="width:100%;height:100%;object-fit:cover;object-position:top;display:block;"/>
+      </div>
+    </section>
+  </main>
+  </sc-if>
+
+  <sc-if value="{{isListings}}">
+  <main style="max-width:1080px;margin:0 auto;padding:96px 32px 88px;display:grid;grid-template-columns:200px 1fr;gap:40px;">
+    <aside>
+      <div style="font:italic 400 15px 'Newsreader';color:#8a857a;margin-bottom:16px;">Category</div>
+      <sc-for list="{{categories}}" as="cat" hint-placeholder-count="7">
+        <button onClick="{{cat.onClick}}" style="{{cat.style}}">{{cat.label}}</button>
+      </sc-for>
+    </aside>
+    <div>
+      <div style="display:flex;gap:12px;margin-bottom:26px;">
+        <input value="{{listingsSearch}}" onChange="{{setListingsSearch}}" placeholder="Search job title or company" style="flex:1;padding:13px 16px;border:1px solid rgba(21,19,15,0.2);border-radius:5px;font:400 15px 'IBM Plex Sans';background:#fff;"/>
+        <select style="padding:13px 16px;border:1px solid rgba(21,19,15,0.2);border-radius:5px;font:500 14px 'IBM Plex Sans';background:#fff;"><option>Most Relevant</option><option>Highest Pay</option><option>Closest to Me</option><option>Newest</option></select>
+      </div>
+      <div style="font:italic 400 15px 'Newsreader';color:#8a857a;margin-bottom:20px;">{{resultCount}} jobs available</div>
+      <div style="display:flex;flex-direction:column;">
+        <sc-for list="{{jobsWithMeta}}" as="job" hint-placeholder-count="6">
+          <div style="padding:24px 0;border-top:1px solid rgba(21,19,15,0.14);display:flex;justify-content:space-between;align-items:start;gap:20px;">
+            <div>
+              <div onClick="{{job.onSelect}}" style="font:500 20px 'Newsreader';cursor:pointer;margin-bottom:6px;">{{job.title}}</div>
+              <div style="font:400 13.5px 'IBM Plex Sans';color:#5c584f;margin-bottom:12px;">{{job.company}} · {{job.location}} · {{job.distance}}</div>
+              <div style="display:flex;gap:14px;flex-wrap:wrap;">
+                <span style="font:500 11px 'IBM Plex Sans';letter-spacing:0.03em;text-transform:uppercase;color:#3a3830;">{{job.shift}}</span>
+                <sc-if value="{{job.urgent}}"><span style="font:500 11px 'IBM Plex Sans';letter-spacing:0.03em;text-transform:uppercase;color:#b5730b;">Urgent</span></sc-if>
+                <sc-if value="{{job.verified}}"><span style="font:500 11px 'IBM Plex Sans';letter-spacing:0.03em;text-transform:uppercase;color:#1f9d6b;">✓ Verified</span></sc-if>
+              </div>
+            </div>
+            <div style="text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:12px;">
+              <div style="font:500 22px 'Newsreader';white-space:nowrap;">{{job.pay}}</div>
+              <div style="display:flex;gap:8px;">
+                <button onClick="{{job.onToggleSave}}" style="padding:8px 12px;border-radius:5px;border:1px solid rgba(21,19,15,0.2);background:#fff;font:500 12px 'IBM Plex Sans';cursor:pointer;color:#3a3830;">{{job.saveLabel}}</button>
+                <button onClick="{{job.onApply}}" style="{{job.applyBtnStyle}}">{{job.applyLabel}}</button>
+              </div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </main>
+  </sc-if>
+
+  <sc-if value="{{isJobDetail}}">
+  <main style="max-width:1000px;margin:0 auto;padding:96px 32px 88px;display:grid;grid-template-columns:1fr 280px;gap:40px;">
+    <div>
+      <a onClick="{{goListings}}" style="cursor:pointer;font:400 13.5px 'IBM Plex Sans';color:#5c584f;">← Back to listings</a>
+      <h1 style="font:500 38px 'Newsreader';letter-spacing:-0.01em;margin:22px 0 8px;">{{selectedJob.title}}</h1>
+      <sc-if value="{{selectedJobCompanyLinkable}}">
+      <div onClick="{{goCompanyProfile}}" style="font:italic 400 17px 'Newsreader';color:#c1502c;cursor:pointer;margin-bottom:20px;">{{selectedJob.company}}</div>
+      </sc-if>
+      <sc-if value="{{selectedJobCompanyNotLinkable}}">
+      <div style="font:italic 400 17px 'Newsreader';color:#5c584f;margin-bottom:20px;">{{selectedJob.company}}</div>
+      </sc-if>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;margin:0 0 32px;">
+        <span style="font:500 12px 'IBM Plex Sans';letter-spacing:0.02em;text-transform:uppercase;color:#5c584f;">{{selectedJob.location}}</span>
+        <span style="font:500 12px 'IBM Plex Sans';letter-spacing:0.02em;text-transform:uppercase;color:#5c584f;">{{selectedJob.shift}}</span>
+        <span style="font:500 12px 'IBM Plex Sans';letter-spacing:0.02em;text-transform:uppercase;color:#5c584f;">Posted {{selectedJob.postedAgo}}</span>
+      </div>
+      <div style="font:500 22px 'Newsreader';margin-bottom:12px;">About this role</div>
+      <p style="font:400 16px/1.75 'IBM Plex Sans';color:#3a3830;margin:0 0 30px;">{{selectedJob.description}}</p>
+      <div style="font:500 22px 'Newsreader';margin-bottom:12px;">Requirements</div>
+      <ul style="margin:0 0 30px;padding-left:20px;font:400 15.5px/1.95 'IBM Plex Sans';color:#3a3830;">
+        <sc-for list="{{selectedJob.requirements}}" as="req" hint-placeholder-count="4"><li>{{req}}</li></sc-for>
+      </ul>
+      <div style="font:500 22px 'Newsreader';margin-bottom:12px;">Pay & schedule</div>
+      <p style="font:400 16px/1.75 'IBM Plex Sans';color:#3a3830;margin:0;">{{selectedJob.payDetails}}</p>
+    </div>
+    <aside>
+      <div style="position:sticky;top:96px;padding:28px;border:1px solid rgba(21,19,15,0.14);background:#fff;">
+        <div style="font:500 30px 'Newsreader';margin-bottom:4px;">{{selectedJob.pay}}</div>
+        <div style="font:400 13.5px 'IBM Plex Sans';color:#5c584f;margin-bottom:24px;">{{selectedJob.applicants}} people applied</div>
+        <button onClick="{{onApplySelected}}" style="{{applySelectedBtnStyle}}">{{applySelectedLabel}}</button>
+        <button onClick="{{onToggleSaveSelected}}" style="width:100%;margin-top:10px;padding:12px;border-radius:5px;border:1px solid rgba(21,19,15,0.2);background:#fff;font:500 14px 'IBM Plex Sans';cursor:pointer;">{{saveSelectedLabel}}</button>
+        <div style="margin-top:24px;padding-top:24px;border-top:1px solid rgba(21,19,15,0.12);font:400 13.5px 'IBM Plex Sans';color:#5c584f;">★ {{selectedJob.rating}} employer rating</div>
+      </div>
+      <sc-if value="{{hasSimilarJobs}}">
+      <div style="margin-top:28px;">
+        <div style="font:italic 400 15px 'Newsreader';color:#8a857a;margin-bottom:14px;">Similar jobs</div>
+        <sc-for list="{{similarJobs}}" as="job" hint-placeholder-count="3">
+          <div onClick="{{job.onSelect}}" style="padding:14px 0;border-top:1px solid rgba(21,19,15,0.14);cursor:pointer;">
+            <div style="font:500 15px 'Newsreader';margin-bottom:3px;">{{job.title}}</div>
+            <div style="font:400 12.5px 'IBM Plex Sans';color:#5c584f;">{{job.company}} · {{job.pay}}</div>
+          </div>
+        </sc-for>
+      </div>
+      </sc-if>
+    </aside>
+  </main>
+  </sc-if>
+
+  <sc-if value="{{isCompanyProfile}}">
+  <main style="max-width:1000px;margin:0 auto;padding:0 32px 88px;">
+    <div style="height:230px;background:repeating-linear-gradient(135deg,#eceae3,#eceae3 14px,#e2e0d7 14px,#e2e0d7 28px);margin:0 -32px 0;"></div>
+    <div style="display:flex;gap:20px;align-items:flex-end;margin-top:-36px;padding:0 8px;">
+      <div style="width:92px;height:92px;background:#faf8f4;border:1px solid rgba(21,19,15,0.18);display:flex;align-items:center;justify-content:center;font:500 32px 'Newsreader';color:#c1502c;">Q</div>
+      <div style="padding-bottom:8px;">
+        <h1 style="font:500 30px 'Newsreader';letter-spacing:-0.01em;margin:0 0 4px;">{{company.name}}</h1>
+        <div style="font:400 13.5px 'IBM Plex Sans';color:#5c584f;">{{company.industry}} · {{company.hq}}</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 260px;gap:40px;margin-top:36px;">
+      <div>
+        <div style="font:500 20px 'Newsreader';margin-bottom:12px;">About</div>
+        <p style="font:400 16px/1.75 'IBM Plex Sans';color:#3a3830;margin:0 0 34px;">{{company.about}}</p>
+        <div style="font:500 20px 'Newsreader';margin-bottom:14px;">Open roles</div>
+        <div style="display:flex;flex-direction:column;">
+          <sc-for list="{{company.openRoles}}" as="role" hint-placeholder-count="3">
+            <div onClick="{{role.onClick}}" style="padding:16px 0;border-top:1px solid rgba(21,19,15,0.14);cursor:pointer;display:flex;justify-content:space-between;">
+              <div><div style="font:500 17px 'Newsreader';margin-bottom:3px;">{{role.title}}</div><div style="font:400 12.5px 'IBM Plex Sans';color:#5c584f;">{{role.location}}</div></div>
+              <div style="font:500 17px 'Newsreader';">{{role.pay}}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="padding:22px;border:1px solid rgba(21,19,15,0.14);background:#fff;height:fit-content;">
+        <div style="display:flex;justify-content:space-between;padding-bottom:13px;border-bottom:1px solid rgba(21,19,15,0.1);margin-bottom:13px;"><span style="font:400 13px 'IBM Plex Sans';color:#5c584f;">Founded</span><span style="font:500 14px 'Newsreader';">{{company.founded}}</span></div>
+        <div style="display:flex;justify-content:space-between;padding-bottom:13px;border-bottom:1px solid rgba(21,19,15,0.1);margin-bottom:13px;"><span style="font:400 13px 'IBM Plex Sans';color:#5c584f;">Company size</span><span style="font:500 14px 'Newsreader';">{{company.size}}</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="font:400 13px 'IBM Plex Sans';color:#5c584f;">Rating</span><span style="font:500 14px 'Newsreader';">★ {{company.rating}} ({{company.reviews}})</span></div>
+      </div>
+    </div>
+  </main>
+  </sc-if>
+
+  <sc-if value="{{isLogin}}">
+  <main style="max-width:420px;margin:120px auto 110px;padding:0 32px;">
+    <div style="padding:38px;border:1px solid rgba(21,19,15,0.14);background:#fff;">
+      <h1 style="font:500 28px 'Newsreader';letter-spacing:-0.01em;margin:0 0 6px;text-align:center;">Welcome back</h1>
+      <p style="font:400 14px 'IBM Plex Sans';color:#5c584f;text-align:center;margin:0 0 28px;">Log in to continue to HanapHire</p>
+      <div style="display:flex;border-bottom:1px solid rgba(21,19,15,0.14);margin-bottom:26px;">
+        <button onClick="{{setRoleSeeker}}" style="{{roleTabSeekerStyle}}">Job Seeker</button>
+        <button onClick="{{setRoleEmployer}}" style="{{roleTabEmployerStyle}}">Employer</button>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <input placeholder="Email address" style="padding:12px 14px;border:1px solid rgba(21,19,15,0.2);border-radius:5px;font:400 14.5px 'IBM Plex Sans';"/>
+        <input placeholder="Password" type="password" style="padding:12px 14px;border:1px solid rgba(21,19,15,0.2);border-radius:5px;font:400 14.5px 'IBM Plex Sans';"/>
+        <button onClick="{{onLoginSubmit}}" style="{{ctaButtonStyle}}width:100%;padding:13px;">Log in</button>
+      </div>
+      <div style="text-align:center;margin-top:22px;font:400 13.5px 'IBM Plex Sans';color:#5c584f;">No account? <a onClick="{{goSignup}}" style="cursor:pointer;">Sign up</a></div>
+    </div>
+  </main>
+  </sc-if>
+
+  <sc-if value="{{isSignup}}">
+  <main style="max-width:420px;margin:120px auto 110px;padding:0 32px;">
+    <div style="padding:38px;border:1px solid rgba(21,19,15,0.14);background:#fff;">
+      <h1 style="font:500 28px 'Newsreader';letter-spacing:-0.01em;margin:0 0 6px;text-align:center;">Create your account</h1>
+      <p style="font:400 14px 'IBM Plex Sans';color:#5c584f;text-align:center;margin:0 0 28px;">Free for job seekers. Free to post your first job.</p>
+      <div style="display:flex;border-bottom:1px solid rgba(21,19,15,0.14);margin-bottom:26px;">
+        <button onClick="{{setRoleSeeker}}" style="{{roleTabSeekerStyle}}">Job Seeker</button>
+        <button onClick="{{setRoleEmployer}}" style="{{roleTabEmployerStyle}}">Employer</button>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <input placeholder="Full name" style="padding:12px 14px;border:1px solid rgba(21,19,15,0.2);border-radius:5px;font:400 14.5px 'IBM Plex Sans';"/>
+        <input placeholder="Email address" style="padding:12px 14px;border:1px solid rgba(21,19,15,0.2);border-radius:5px;font:400 14.5px 'IBM Plex Sans';"/>
+        <input placeholder="Password" type="password" style="padding:12px 14px;border:1px solid rgba(21,19,15,0.2);border-radius:5px;font:400 14.5px 'IBM Plex Sans';"/>
+        <button onClick="{{onLoginSubmit}}" style="{{ctaButtonStyle}}width:100%;padding:13px;">Create account</button>
+      </div>
+      <div style="text-align:center;margin-top:22px;font:400 13.5px 'IBM Plex Sans';color:#5c584f;">Already have an account? <a onClick="{{goLogin}}" style="cursor:pointer;">Log in</a></div>
+    </div>
+  </main>
+  </sc-if>
+
+  <footer style="background:#201a15;margin-top:20px;">
+    <div style="max-width:1200px;margin:0 auto;padding:52px 32px 28px;display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:40px;">
+      <div>
+        <img src="assets/logo-cropped.png" alt="HanapHire" style="height:40px;display:block;margin-bottom:16px;filter:brightness(0) invert(1);"/>
+        <p style="font:400 14px/1.6 'IBM Plex Sans';color:#8a857a;max-width:280px;">On-demand hiring for gig and hourly work, built to move at the speed of a shift.</p>
+      </div>
+      <div>
+        <div style="font:italic 400 15px 'Newsreader';color:#8a857a;margin-bottom:18px;">Product</div>
+        <div style="display:flex;flex-direction:column;gap:12px;font:400 14px 'IBM Plex Sans';">
+          <a onClick="{{goListings}}" style="cursor:pointer;color:#e5e3dd;">Browse jobs</a>
+          <a onClick="{{goEmployerLogin}}" style="cursor:pointer;color:#e5e3dd;">Post a job</a>
+          <a onClick="{{goCompanyProfile}}" style="cursor:pointer;color:#e5e3dd;">Company directory</a>
+        </div>
+      </div>
+      <div>
+        <div style="font:italic 400 15px 'Newsreader';color:#8a857a;margin-bottom:18px;">Company</div>
+        <div style="display:flex;flex-direction:column;gap:12px;font:400 14px 'IBM Plex Sans';">
+          <span style="color:#6b675e;">About <em style="font-style:italic;opacity:0.7;">(soon)</em></span><span style="color:#6b675e;">Careers <em style="font-style:italic;opacity:0.7;">(soon)</em></span>
+          <a onClick="{{goAdmin}}" style="cursor:pointer;color:#8a857a;font:400 12.5px 'IBM Plex Sans';">Admin console →</a>
+        </div>
+      </div>
+    </div>
+    <div style="max-width:1200px;margin:0 auto;padding:20px 32px;border-top:1px solid rgba(245,243,238,0.12);font:400 13px 'IBM Plex Sans';color:#6b675e;">© 2026 HanapHire, Inc.</div>
+  </footer>
+</div>
+</sc-if>
+
+<sc-if value="{{isAppShell}}">
+<div style="min-height:100vh;">
+  <div style="background:#faf8f4;border-bottom:1px solid rgba(21,19,15,0.12);padding:16px 28px;display:flex;justify-content:space-between;align-items:center;">
+    <div onClick="{{goLanding}}" style="cursor:pointer;"><img src="assets/logo-cropped.png" alt="HanapHire" style="height:34px;display:block;"/></div>
+    <div style="display:flex;align-items:center;gap:16px;">
+      <span style="font:400 12px 'IBM Plex Sans';letter-spacing:0.02em;text-transform:uppercase;color:#5c584f;">{{roleLabel}}</span>
+      <div style="width:30px;height:30px;background:#15130f;color:#f5f3ee;font:500 12px 'Newsreader';display:flex;align-items:center;justify-content:center;border-radius:999px;">JD</div>
+      <a onClick="{{goLanding}}" style="cursor:pointer;font:400 13.5px 'IBM Plex Sans';color:#5c584f;">Exit</a>
+    </div>
+  </div>
+  <div style="display:flex;">
+    <aside style="width:210px;flex-shrink:0;background:#faf8f4;border-right:1px solid rgba(21,19,15,0.12);padding:24px 0;min-height:calc(100vh - 63px);">
+      <sc-for list="{{sidebarNavItems}}" as="item" hint-placeholder-count="3">
+        <button onClick="{{item.onClick}}" style="{{item.style}}">{{item.label}}</button>
+      </sc-for>
+    </aside>
+    <main style="flex:1;padding:40px 48px;max-width:1080px;">
+
+      <sc-if value="{{isSeekerDashboard}}">
+      <div>
+        <h1 style="font:500 28px 'Newsreader';letter-spacing:-0.01em;margin:0 0 24px;">My Dashboard</h1>
+        <div style="display:flex;border-bottom:1px solid rgba(21,19,15,0.14);margin-bottom:26px;">
+          <button onClick="{{setSeekerTabApplications}}" style="{{seekerTabApplicationsStyle}}">Applications</button>
+          <button onClick="{{setSeekerTabSaved}}" style="{{seekerTabSavedStyle}}">Saved Jobs</button>
+        </div>
+        <sc-if value="{{isSeekerTabApplications}}">
+        <div style="display:flex;flex-direction:column;">
+          <sc-for list="{{applications}}" as="app" hint-placeholder-count="4">
+            <div style="padding:18px 0;border-top:1px solid rgba(21,19,15,0.12);display:flex;justify-content:space-between;align-items:center;">
+              <div><div style="font:500 17px 'Newsreader';margin-bottom:3px;">{{app.jobTitle}}</div><div style="font:400 12.5px 'IBM Plex Sans';color:#5c584f;">{{app.company}} · Applied {{app.appliedAt}}</div></div>
+              <span style="{{app.statusStyle}}">{{app.status}}</span>
+            </div>
+          </sc-for>
+        </div>
+        </sc-if>
+        <sc-if value="{{isSeekerTabSaved}}">
+        <div style="display:flex;flex-direction:column;">
+          <sc-for list="{{savedJobsList}}" as="job" hint-placeholder-count="2">
+            <div onClick="{{job.onSelect}}" style="padding:18px 0;border-top:1px solid rgba(21,19,15,0.12);display:flex;justify-content:space-between;align-items:center;cursor:pointer;">
+              <div><div style="font:500 17px 'Newsreader';margin-bottom:3px;">{{job.title}}</div><div style="font:400 12.5px 'IBM Plex Sans';color:#5c584f;">{{job.company}} · {{job.location}}</div></div>
+              <span style="font:500 18px 'Newsreader';">{{job.pay}}</span>
+            </div>
+          </sc-for>
+        </div>
+        </sc-if>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{isPostJob}}">
+      <div style="max-width:640px;">
+        <h1 style="font:500 28px 'Newsreader';letter-spacing:-0.01em;margin:0 0 6px;">Post a job</h1>
+        <p style="font:400 14px 'IBM Plex Sans';color:#5c584f;margin:0 0 30px;">Fill in shift details — our AI screening agent will use this to rank applicants automatically.</p>
+        <div style="display:flex;flex-direction:column;gap:16px;">
+          <div><label style="font:400 12px 'IBM Plex Sans';letter-spacing:0.02em;text-transform:uppercase;color:#5c584f;display:block;margin-bottom:6px;">Job title</label><input placeholder="e.g. Warehouse Associate — Overnight" style="width:100%;padding:11px 14px;border:1px solid rgba(21,19,15,0.2);border-radius:5px;font:400 14.5px 'IBM Plex Sans';"/></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+            <div><label style="font:400 12px 'IBM Plex Sans';letter-spacing:0.02em;text-transform:uppercase;color:#5c584f;display:block;margin-bottom:6px;">Category</label><select style="width:100%;padding:11px 14px;border:1px solid rgba(21,19,15,0.2);border-radius:5px;font:400 14.5px 'IBM Plex Sans';background:#fff;"><option>Warehouse</option><option>Delivery</option><option>Home Services</option><option>Events & Hospitality</option><option>Skilled Trades</option><option>Retail & Customer Service</option></select></div>
+            <div><label style="font:400 12px 'IBM Plex Sans';letter-spacing:0.02em;text-transform:uppercase;color:#5c584f;display:block;margin-bottom:6px;">Pay rate</label><input placeholder="$/hr or fixed" style="width:100%;padding:11px 14px;border:1px solid rgba(21,19,15,0.2);border-radius:5px;font:400 14.5px 'IBM Plex Sans';"/></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+            <div><label style="font:400 12px 'IBM Plex Sans';letter-spacing:0.02em;text-transform:uppercase;color:#5c584f;display:block;margin-bottom:6px;">Location</label><input placeholder="City, state" style="width:100%;padding:11px 14px;border:1px solid rgba(21,19,15,0.2);border-radius:5px;font:400 14.5px 'IBM Plex Sans';"/></div>
+            <div><label style="font:400 12px 'IBM Plex Sans';letter-spacing:0.02em;text-transform:uppercase;color:#5c584f;display:block;margin-bottom:6px;">Shift / schedule</label><input placeholder="Today 2pm–8pm" style="width:100%;padding:11px 14px;border:1px solid rgba(21,19,15,0.2);border-radius:5px;font:400 14.5px 'IBM Plex Sans';"/></div>
+          </div>
+          <div><label style="font:400 12px 'IBM Plex Sans';letter-spacing:0.02em;text-transform:uppercase;color:#5c584f;display:block;margin-bottom:6px;">Description</label><textarea rows="4" placeholder="Describe the role and daily tasks" style="width:100%;padding:11px 14px;border:1px solid rgba(21,19,15,0.2);border-radius:5px;font:400 14.5px 'IBM Plex Sans';resize:vertical;"></textarea></div>
+          <div><label style="font:400 12px 'IBM Plex Sans';letter-spacing:0.02em;text-transform:uppercase;color:#5c584f;display:block;margin-bottom:6px;">Screening criteria (used by the AI agent)</label><textarea rows="3" placeholder="e.g. Forklift certified, 1+ yr warehouse experience, available overnight" style="width:100%;padding:11px 14px;border:1px solid rgba(21,19,15,0.2);border-radius:5px;font:400 14.5px 'IBM Plex Sans';resize:vertical;"></textarea></div>
+          <button onClick="{{onPublishJob}}" style="{{ctaButtonStyle}}margin-top:8px;">Publish job</button>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{isEmployerDashboard}}">
+      <div>
+        <h1 style="font:500 28px 'Newsreader';letter-spacing:-0.01em;margin:0 0 24px;">Your job postings</h1>
+        <div style="display:flex;flex-direction:column;margin-bottom:36px;">
+          <sc-for list="{{employerJobsView}}" as="job" hint-placeholder-count="3">
+            <div style="{{job.rowStyle}}">
+              <div>
+                <div style="font:500 18px 'Newsreader';margin-bottom:4px;">{{job.title}}</div>
+                <div style="font:400 12.5px 'IBM Plex Sans';color:#5c584f;">{{job.applicants}} applicants · {{job.newApplicants}} new · Posted {{job.postedAgo}}</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:16px;">
+                <span style="{{job.statusStyle}}">{{job.status}}</span>
+                <button onClick="{{job.onSelect}}" style="padding:9px 16px;border-radius:5px;border:1px solid rgba(21,19,15,0.2);background:#fff;font:500 13px 'IBM Plex Sans';cursor:pointer;">View applicants</button>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="font:500 20px 'Newsreader';margin-bottom:18px;">Applicants — {{selectedEmployerJob.title}}</div>
+
+        <sc-if value="{{isSelectedEmployerJobAgentEligible}}">
+          <div style="padding:22px 26px;border:1px solid #2f7d78;display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+            <div>
+              <div style="font:500 17px 'Newsreader';color:#15130f;margin-bottom:4px;">34 applicants waiting to be reviewed</div>
+              <div style="font:400 13px 'IBM Plex Sans';color:#5c584f;">Let the AI Screening Agent rank candidates and draft outreach for your top matches.</div>
+            </div>
+            <button onClick="{{goAiAgent}}" style="{{ctaButtonStyle}}white-space:nowrap;">Run AI Screening Agent →</button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{hasApplicantsForSelected}}">
+        <div style="display:flex;flex-direction:column;">
+          <sc-for list="{{applicantsForSelected}}" as="a" hint-placeholder-count="3">
+            <div style="padding:16px 0;border-top:1px solid rgba(21,19,15,0.12);display:flex;justify-content:space-between;align-items:center;">
+              <div style="display:flex;gap:14px;align-items:center;">
+                <div style="width:36px;height:36px;background:#f0eee7;font:500 13px 'Newsreader';display:flex;align-items:center;justify-content:center;border-radius:999px;">{{a.initial}}</div>
+                <div><div style="font:500 16px 'Newsreader';">{{a.name}}</div><div style="font:400 12px 'IBM Plex Sans';color:#5c584f;">Applied {{a.appliedAgo}} · ★ {{a.rating}}</div></div>
+              </div>
+              <span style="{{a.statusStyle}}">{{a.status}}</span>
+            </div>
+          </sc-for>
+        </div>
+        </sc-if>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{isAiAgent}}">
+      <div style="max-width:780px;">
+        <div style="font:italic 400 15px 'Newsreader';color:#8a857a;margin-bottom:8px;">AI Screening Agent · {{selectedEmployerJob.title}}</div>
+        <h1 style="font:500 28px 'Newsreader';letter-spacing:-0.01em;margin:0 0 22px;">Screen & rank applicants</h1>
+
+        <div style="padding:22px 26px;border:1px solid rgba(21,19,15,0.14);background:#fff;margin-bottom:26px;">
+          <div style="font:500 15px 'Newsreader';margin-bottom:12px;">Screening criteria (from job posting)</div>
+          <div style="display:flex;gap:18px;flex-wrap:wrap;">
+            <sc-for list="{{jobCriteria}}" as="c" hint-placeholder-count="4"><span style="font:400 13px 'IBM Plex Sans';color:#3a3830;">{{c}}</span></sc-for>
+          </div>
+        </div>
+
+        <sc-if value="{{isAgentIdle}}">
+        <div style="padding:36px;border:1px dashed rgba(21,19,15,0.28);text-align:center;background:#fdfcfa;margin-bottom:26px;">
+          <div style="font:500 19px 'Newsreader';margin-bottom:10px;">34 applicants ready to screen</div>
+          <div style="font:400 14px 'IBM Plex Sans';color:#5c584f;margin-bottom:24px;">The agent will read your criteria, score every applicant, rank the top matches, and draft personalized outreach — fully in the background.</div>
+          <button onClick="{{startAgent}}" style="{{ctaButtonStyleLg}}">Start Agent</button>
+        </div>
+        </sc-if>
+
+        <sc-if value="{{isAgentRunning}}">
+        <div style="padding:30px;background:#fff;border:1px solid rgba(21,19,15,0.14);margin-bottom:26px;">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
+            <div style="width:18px;height:18px;border:2.5px solid rgba(47,125,120,0.2);border-top-color:#2f7d78;border-radius:999px;animation:spin 0.8s linear infinite;"></div>
+            <div style="font:500 17px 'Newsreader';">Agent running in the background…</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:16px;">
+            <sc-for list="{{agentStepsView}}" as="step" hint-placeholder-count="5">
+              <div style="display:flex;align-items:center;gap:12px;{{step.opacity}}">
+                <div style="{{step.dotStyle}}">{{step.mark}}</div>
+                <span style="font:400 14.5px 'IBM Plex Sans';color:#3a3830;">{{step.label}}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="margin-top:24px;font:400 13px 'IBM Plex Sans';color:#8a857a;">Feel free to navigate elsewhere — we'll notify you the moment it's done.</div>
+        </div>
+        </sc-if>
+
+        <sc-if value="{{isAgentDone}}">
+        <div style="padding:20px 24px;border:1px solid #1f9d6b;margin-bottom:24px;display:flex;justify-content:space-between;align-items:center;">
+          <div><div style="font:500 17px 'Newsreader';color:#146c46;margin-bottom:2px;">Screening complete</div><div style="font:400 13px 'IBM Plex Sans';color:#1f9d6b;">{{agentTopMatchCount}} top matches found from 34 applicants</div></div>
+          <span style="font:400 12px 'IBM Plex Sans';color:#146c46;">Just now</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:18px;">
+          <sc-for list="{{agentCandidatesView}}" as="c" hint-placeholder-count="6">
+            <div style="padding:24px;border:1px solid rgba(21,19,15,0.14);background:#fff;">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;">
+                <div style="display:flex;gap:14px;align-items:center;">
+                  <div style="width:42px;height:42px;background:#f0eee7;font:500 15px 'Newsreader';display:flex;align-items:center;justify-content:center;border-radius:999px;">{{c.initial}}</div>
+                  <div>
+                    <div style="font:500 18px 'Newsreader';">{{c.name}}</div>
+                    <div style="font:400 12.5px 'IBM Plex Sans';color:#5c584f;">{{c.yearsExp}} · {{c.availability}} · ★ {{c.rating}}</div>
+                  </div>
+                </div>
+                <div style="text-align:right;">
+                  <div style="font:500 26px 'Newsreader';color:#2f7d78;">{{c.matchScore}}%</div>
+                  <div style="font:400 10.5px 'IBM Plex Sans';letter-spacing:0.02em;text-transform:uppercase;color:#8a857a;">match score</div>
+                </div>
+              </div>
+              <div style="font:400 14.5px/1.6 'IBM Plex Sans';color:#3a3830;background:#fdfcfa;padding:14px 16px;margin-bottom:14px;border-left:2px solid #2f7d78;">{{c.rationale}}</div>
+              <div style="font:400 11.5px 'IBM Plex Sans';letter-spacing:0.02em;text-transform:uppercase;color:#8a857a;margin-bottom:8px;">Drafted outreach</div>
+              <div style="font:400 14.5px/1.6 'IBM Plex Sans';color:#3a3830;border:1px solid rgba(21,19,15,0.14);padding:14px 16px;margin-bottom:16px;">{{c.draftMessage}}</div>
+              <sc-if value="{{c.isPending}}">
+              <div style="display:flex;gap:10px;">
+                <button onClick="{{c.onApprove}}" style="{{ctaButtonStyle}}">Approve & send</button>
+                <button style="padding:10px 16px;border-radius:5px;border:1px solid rgba(21,19,15,0.2);background:#fff;font:500 13px 'IBM Plex Sans';cursor:pointer;">Edit draft</button>
+                <button onClick="{{c.onDismiss}}" style="padding:10px 16px;border-radius:5px;border:1px solid rgba(21,19,15,0.2);background:#fff;font:500 13px 'IBM Plex Sans';cursor:pointer;color:#c0392b;">Dismiss</button>
+              </div>
+              </sc-if>
+              <sc-if value="{{c.isSent}}"><span style="font:500 13px 'IBM Plex Sans';color:#1f9d6b;">✓ Outreach sent</span></sc-if>
+              <sc-if value="{{c.isDismissed}}"><span style="font:500 13px 'IBM Plex Sans';color:#8a857a;">Dismissed</span></sc-if>
+            </div>
+          </sc-for>
+        </div>
+        </sc-if>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{isAdmin}}">
+      <div>
+        <h1 style="font:500 28px 'Newsreader';letter-spacing:-0.01em;margin:0 0 24px;">Admin console</h1>
+        <sc-if value="{{isAdminOverview}}">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:24px;">
+          <sc-for list="{{adminStats}}" as="stat" hint-placeholder-count="4">
+            <div style="padding:20px 0;border-top:1px solid rgba(21,19,15,0.14);">
+              <div style="font:500 30px 'Newsreader';margin-bottom:6px;">{{stat.value}}</div>
+              <div style="font:400 12.5px 'IBM Plex Sans';color:#5c584f;">{{stat.label}}</div>
+            </div>
+          </sc-for>
+        </div>
+        </sc-if>
+        <sc-if value="{{isAdminModeration}}">
+        <div style="display:flex;flex-direction:column;">
+          <sc-for list="{{flaggedListings}}" as="f" hint-placeholder-count="4">
+            <div style="padding:18px 0;border-top:1px solid rgba(21,19,15,0.12);display:flex;justify-content:space-between;align-items:center;">
+              <div>
+                <div style="font:500 16px 'Newsreader';margin-bottom:3px;">{{f.title}}</div>
+                <div style="font:400 12.5px 'IBM Plex Sans';color:#5c584f;">{{f.employer}} · reported {{f.reportedAgo}}</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:14px;">
+                <span style="{{f.severityStyle}}">{{f.reason}}</span>
+                <button style="padding:8px 14px;border-radius:5px;border:1px solid rgba(21,19,15,0.2);background:#fff;font:500 12.5px 'IBM Plex Sans';cursor:pointer;">Review</button>
+                <button onClick="{{f.onRemove}}" style="padding:8px 14px;border-radius:5px;border:none;background:#c0392b;color:#fff;font:500 12.5px 'IBM Plex Sans';cursor:pointer;">Remove</button>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        </sc-if>
+        <sc-if value="{{isAdminUsers}}">
+        <div style="display:flex;flex-direction:column;">
+          <sc-for list="{{recentUsers}}" as="u" hint-placeholder-count="5">
+            <div style="padding:16px 0;border-top:1px solid rgba(21,19,15,0.12);display:flex;justify-content:space-between;align-items:center;">
+              <div><div style="font:500 15.5px 'Newsreader';">{{u.name}}</div><div style="font:400 12px 'IBM Plex Sans';color:#5c584f;">{{u.role}} · joined {{u.joined}}</div></div>
+              <span style="{{u.statusStyle}}">{{u.status}}</span>
+            </div>
+          </sc-for>
+        </div>
+        </sc-if>
+      </div>
+      </sc-if>
+
+    </main>
+  </div>
+</div>
+</sc-if>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 1440, &quot;height&quot;: 900}, &quot;accentColor&quot;: {&quot;editor&quot;: &quot;color&quot;, &quot;default&quot;: &quot;#c1502c&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;options&quot;: [&quot;#c1502c&quot;, &quot;#2f7d78&quot;, &quot;#5c4a8a&quot;, &quot;#8a6a2f&quot;]}, &quot;startPage&quot;: {&quot;editor&quot;: &quot;enum&quot;, &quot;default&quot;: &quot;landing&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;options&quot;: [&quot;landing&quot;, &quot;listings&quot;, &quot;jobDetail&quot;, &quot;login&quot;, &quot;signup&quot;, &quot;companyProfile&quot;, &quot;seekerDashboard&quot;, &quot;postJob&quot;, &quot;employerDashboard&quot;, &quot;aiAgent&quot;, &quot;admin&quot;], &quot;section&quot;: &quot;Preview&quot;}, &quot;agentAutoDemo&quot;: {&quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;AI Agent&quot;}}">
+class Component extends DCLogic {
+  state = {
+    page: 'landing',
+    navOpen: false,
+    authRoleTab: 'seeker',
+    listingsCategory: 'All Categories',
+    listingsSearch: '',
+    selectedJobId: 1,
+    savedJobIds: [3, 7],
+    applications: [
+      { id: 1, jobId: 1, jobTitle: 'Delivery Driver — Same-Day Routes', company: 'QuickCart Logistics', appliedAt: '2 days ago', status: 'Interview', statusStyle: pill('#c1502c') },
+      { id: 2, jobId: 7, jobTitle: 'Banquet Server — Corporate Events', company: 'Marquee Hospitality Group', appliedAt: '4 days ago', status: 'Viewed', statusStyle: pill('#8a857a') },
+      { id: 3, jobId: 8, jobTitle: 'Forklift Operator — Certified', company: 'Portside Freight', appliedAt: '1 week ago', status: 'Hired', statusStyle: pill('#1f9d6b') },
+      { id: 4, jobId: 6, jobTitle: 'Retail Associate — Holiday Rush', company: 'Northgate Mercantile', appliedAt: '1 week ago', status: 'Rejected', statusStyle: pill('#c0392b') },
+    ],
+    seekerTab: 'applications',
+    heroMode: 'seeker',
+    heroCategory: null,
+    selectedEmployerJobId: 2,
+    agentState: 'idle',
+    agentStepIndex: 0,
+    agentCandidates: [
+      { id: 1, initial: 'MR', name: 'Marcus Reyes', matchScore: 96, yearsExp: '3 yrs warehouse', rating: 4.9, availability: 'Available immediately', rationale: 'Certified forklift operator with 3 years overnight warehouse experience — exceeds every requirement and available to start this week.', draftMessage: "Hi Marcus, your forklift certification and overnight availability line up perfectly with our Warehouse Associate role at Fulcrum. Would you be open to a quick call this week?", status: 'pending' },
+      { id: 2, initial: 'DO', name: 'Dana Okafor', matchScore: 91, yearsExp: '2 yrs logistics', rating: 4.8, availability: 'Flexible schedule', rationale: 'Strong inventory management background and consistently high reliability rating from past shifts.', draftMessage: "Hi Dana, we were impressed by your inventory management experience. We have an overnight Warehouse Associate opening at Fulcrum — interested in learning more?", status: 'pending' },
+      { id: 3, initial: 'LM', name: 'Leo Martins', matchScore: 88, yearsExp: '1 yr warehouse', rating: 4.6, availability: 'Available this week', rationale: 'Newer to warehouse work but a fast learner with strong recent shift attendance.', draftMessage: "Hi Leo, your recent warehouse shifts caught our eye. We're hiring for overnight Warehouse Associates at Fulcrum — want to hear more?", status: 'pending' },
+      { id: 4, initial: 'PC', name: 'Priya Chandran', matchScore: 84, yearsExp: '4 yrs logistics', rating: 4.7, availability: 'Prefers overnight', rationale: 'Deep logistics coordination background; slightly overqualified but explicitly prefers overnight shifts.', draftMessage: "Hi Priya, your logistics coordination background stood out. We have an overnight Warehouse Associate role at Fulcrum that matches your shift preference.", status: 'pending' },
+      { id: 5, initial: 'SW', name: 'Sam Whitfield', matchScore: 79, yearsExp: 'New to warehouse', rating: 4.5, availability: 'Available immediately', rationale: 'No direct warehouse history yet, but a strong reliability score and immediate availability.', draftMessage: "Hi Sam, we like your reliability track record. Would you consider an overnight Warehouse Associate role at Fulcrum to get started in the space?", status: 'pending' },
+      { id: 6, initial: 'TG', name: 'Tasha Greene', matchScore: 75, yearsExp: '2 yrs retail', rating: 4.4, availability: 'Part-time only', rationale: 'Transferable customer-facing skills, though only available part-time versus the full overnight shift.', draftMessage: "Hi Tasha, thanks for applying — we may have part-time overnight slots for the Warehouse Associate role at Fulcrum. Interested in a quick chat?", status: 'pending' },
+    ],
+    adminTab: 'overview',
+    flaggedListings: [
+      { id: 1, title: 'Cash Only Delivery Runner', employer: 'Swift Parcel Co.', reportedAgo: '2h ago', reason: 'Suspicious pay terms', severityStyle: pill('#c0392b') },
+      { id: 2, title: 'Warehouse Help Needed ASAP', employer: 'BoxMove LLC', reportedAgo: '5h ago', reason: 'Unverified business', severityStyle: pill('#b5730b') },
+      { id: 3, title: 'Event Staff — No Experience', employer: 'Starlight Promotions', reportedAgo: '1d ago', reason: 'Duplicate listing', severityStyle: pill('#8a857a') },
+      { id: 4, title: 'Home Repair Contractor', employer: 'FastFix Crew', reportedAgo: '2d ago', reason: 'Reported by worker', severityStyle: pill('#c0392b') },
+    ],
+  };
+
+  jobs = [
+    { id: 1, title: 'Delivery Driver — Same-Day Routes', company: 'QuickCart Logistics', category: 'Delivery', pay: '$22/hr', location: 'Austin, TX', distance: '2.4 mi', shift: 'Today, 2pm–8pm', urgent: true, verified: true, postedAgo: '1h ago', rating: 4.8, applicants: 12, logoLetter: 'Q', description: 'QuickCart needs a same-day delivery driver to run local routes across Austin, delivering groceries and retail parcels using your own vehicle. Routes are dispatched via our driver app with real-time navigation.', requirements: ['Valid driver\'s license and insured vehicle', 'Smartphone for the driver app', 'Able to lift up to 30 lbs', 'Available for at least 4 shifts/week'], payDetails: 'Paid $22/hr plus mileage reimbursement, deposited weekly every Friday.' },
+    { id: 2, title: 'Warehouse Associate — Overnight', company: 'Fulcrum Distribution', category: 'Warehouse', pay: '$19.50/hr', location: 'Columbus, OH', distance: '5.1 mi', shift: 'Tonight, 10pm–6am', urgent: true, verified: true, postedAgo: '3h ago', rating: 4.6, applicants: 34, logoLetter: 'F', description: 'Fulcrum Distribution is hiring overnight Warehouse Associates to pick, pack, and stage outbound shipments in a fast-paced fulfillment center.', requirements: ['Forklift certification preferred', '1+ year warehouse experience', 'Comfortable with overnight shifts', 'Able to stand/lift for full shift'], payDetails: 'Paid $19.50/hr with a $1.50/hr overnight differential, weekly pay.' },
+    { id: 3, title: 'Event Setup Crew — Weekend Festival', company: 'Bright Events Co.', category: 'Events & Hospitality', pay: '$180/shift', location: 'Denver, CO', distance: '8 mi', shift: 'Sat, 7am–3pm', urgent: false, verified: true, postedAgo: '6h ago', rating: 4.9, applicants: 21, logoLetter: 'B', description: 'Join the setup crew for a weekend outdoor festival — staging, tent assembly, and vendor booth setup ahead of gates opening.', requirements: ['Able to lift 50 lbs', 'Comfortable working outdoors', 'Team-oriented and punctual', 'Steel-toe boots recommended'], payDetails: 'Flat $180 for the shift, paid same day via direct deposit.' },
+    { id: 4, title: 'Residential Cleaner — Recurring Clients', company: 'TidyNest Home Services', category: 'Home Services', pay: '$24/hr', location: 'Seattle, WA', distance: '3.7 mi', shift: 'Flexible schedule', urgent: false, verified: true, postedAgo: '1d ago', rating: 4.7, applicants: 9, logoLetter: 'T', description: 'TidyNest is looking for a reliable residential cleaner for a rotating book of recurring weekly clients across North Seattle.', requirements: ['1+ year cleaning experience', 'Own transportation', 'Background check required', 'Attention to detail'], payDetails: '$24/hr, tips included, paid weekly with mileage covered between jobs.' },
+    { id: 5, title: 'Licensed Electrician Helper', company: 'VoltWorks Contracting', category: 'Skilled Trades', pay: '$28/hr', location: 'Phoenix, AZ', distance: '12 mi', shift: 'Mon–Fri, 7am–3:30pm', urgent: true, verified: true, postedAgo: '2h ago', rating: 4.5, applicants: 6, logoLetter: 'V', description: 'Assist a licensed electrician on residential rewiring projects — running conduit, pulling wire, and prepping job sites.', requirements: ['Basic electrical tools', 'OSHA 10 preferred', 'Able to work at heights', 'Reliable transportation'], payDetails: '$28/hr, paid biweekly, with potential for ongoing contract work.' },
+    { id: 6, title: 'Retail Associate — Holiday Rush', company: 'Northgate Mercantile', category: 'Retail & Customer Service', pay: '$18/hr', location: 'Chicago, IL', distance: '1.2 mi', shift: 'This week, evenings', urgent: false, verified: true, postedAgo: '4h ago', rating: 4.4, applicants: 41, logoLetter: 'N', description: 'Support front-of-store operations during the holiday rush — restocking, register support, and customer assistance.', requirements: ['Prior retail experience a plus', 'Available evenings and weekends', 'Comfortable on your feet for full shift', 'Friendly, customer-first attitude'], payDetails: '$18/hr, paid weekly, with a holiday shift bonus.' },
+    { id: 7, title: 'Banquet Server — Corporate Events', company: 'Marquee Hospitality Group', category: 'Events & Hospitality', pay: '$21/hr + tips', location: 'Miami, FL', distance: '6.6 mi', shift: 'Fri–Sun evenings', urgent: true, verified: true, postedAgo: '30m ago', rating: 4.8, applicants: 17, logoLetter: 'M', description: 'Serve at upscale corporate events and private banquets across downtown Miami — plated service and bar support.', requirements: ['Prior serving experience preferred', 'Black-and-white formal attire', 'Available weekend evenings', 'Food handler card a plus'], payDetails: '$21/hr plus pooled tips, typically $28–35/hr total, paid weekly.' },
+    { id: 8, title: 'Forklift Operator — Certified', company: 'Portside Freight', category: 'Warehouse', pay: '$23/hr', location: 'Newark, NJ', distance: '4 mi', shift: 'Today, 6am–2pm', urgent: true, verified: true, postedAgo: '45m ago', rating: 4.6, applicants: 15, logoLetter: 'P', description: 'Operate a sit-down forklift loading and unloading freight containers at a busy port-adjacent distribution yard.', requirements: ['Current forklift certification', '6+ months forklift experience', 'Able to pass a physical', 'Punctual and safety-focused'], payDetails: '$23/hr, paid weekly, with same-day shift confirmation.' },
+    { id: 9, title: 'Handyman — Small Repairs', company: 'FixIt Local Pros', category: 'Home Services', pay: '$26/hr', location: 'Portland, OR', distance: '2.9 mi', shift: 'Flexible schedule', urgent: false, verified: false, postedAgo: '1d ago', rating: 4.3, applicants: 5, logoLetter: 'X', description: 'Take on small residential repair jobs booked through the FixIt app — drywall patches, fixture swaps, and minor carpentry.', requirements: ['Own basic hand tools', 'Reliable vehicle', '1+ year handyman experience', 'Smartphone for job dispatch'], payDetails: '$26/hr, paid per completed job within 48 hours.' },
+  ];
+
+  categories = ['All Categories', 'Delivery', 'Warehouse', 'Home Services', 'Events & Hospitality', 'Skilled Trades', 'Retail & Customer Service'];
+
+  employerJobs = [
+    { id: 2, title: 'Warehouse Associate — Overnight', applicants: 34, newApplicants: 9, status: 'Active', postedAgo: '3 days ago', statusStyle: pill('#1f9d6b') },
+    { id: 1, title: 'Delivery Driver — Same-Day Routes', applicants: 12, newApplicants: 2, status: 'Active', postedAgo: '1 day ago', statusStyle: pill('#1f9d6b') },
+    { id: 3, title: 'Event Setup Crew — Weekend Festival', applicants: 21, newApplicants: 0, status: 'Closed', postedAgo: '2 weeks ago', statusStyle: pill('#8a857a') },
+  ];
+
+  job1Applicants = [
+    { initial: 'CN', name: 'Carlos Nunez', appliedAgo: '5h ago', rating: 4.7, status: 'New', statusStyle: pill('#c1502c') },
+    { initial: 'AY', name: 'Amina Yusuf', appliedAgo: '1d ago', rating: 4.9, status: 'Reviewed', statusStyle: pill('#8a857a') },
+    { initial: 'JS', name: 'Jake Sullivan', appliedAgo: '1d ago', rating: 4.5, status: 'New', statusStyle: pill('#c1502c') },
+  ];
+  job3Applicants = [
+    { initial: 'WP', name: 'Wendy Park', appliedAgo: '2 weeks ago', rating: 4.8, status: 'Hired', statusStyle: pill('#1f9d6b') },
+    { initial: 'RP', name: 'Ravi Patel', appliedAgo: '2 weeks ago', rating: 4.6, status: 'Not selected', statusStyle: pill('#c0392b') },
+  ];
+
+  availableWorkersByCategory = {
+    'Delivery': { count: 214, sample: [{ initial: 'RC', name: 'Rico Cabrera', rating: 4.8, years: '2 yrs exp' }, { initial: 'JN', name: 'Jasmine Ng', rating: 4.7, years: '1 yr exp' }, { initial: 'TA', name: 'Tomas Alvarez', rating: 4.9, years: '3 yrs exp' }] },
+    'Warehouse': { count: 186, sample: [{ initial: 'MK', name: 'Mei Kwan', rating: 4.6, years: '2 yrs exp' }, { initial: 'DB', name: 'Derek Boyle', rating: 4.8, years: '4 yrs exp' }, { initial: 'SO', name: 'Sana Osei', rating: 4.5, years: '1 yr exp' }] },
+    'Home Services': { count: 97, sample: [{ initial: 'LF', name: 'Lena Ferris', rating: 4.7, years: '3 yrs exp' }, { initial: 'GH', name: 'Grace Hidalgo', rating: 4.9, years: '2 yrs exp' }, { initial: 'PN', name: 'Paolo Nardi', rating: 4.6, years: '1 yr exp' }] },
+    'Events & Hospitality': { count: 142, sample: [{ initial: 'CV', name: 'Carmen Vega', rating: 4.8, years: '2 yrs exp' }, { initial: 'BW', name: 'Bryce Walton', rating: 4.6, years: '1 yr exp' }, { initial: 'NA', name: 'Nadia Amari', rating: 4.9, years: '3 yrs exp' }] },
+    'Skilled Trades': { count: 64, sample: [{ initial: 'JK', name: 'Jonas Kessler', rating: 4.9, years: '5 yrs exp' }, { initial: 'RM', name: 'Rosa Medina', rating: 4.7, years: '2 yrs exp' }, { initial: 'EW', name: 'Eli Watts', rating: 4.8, years: '4 yrs exp' }] },
+    'Retail & Customer Service': { count: 158, sample: [{ initial: 'AT', name: 'Amara Tuck', rating: 4.6, years: '1 yr exp' }, { initial: 'KF', name: 'Kian Foster', rating: 4.7, years: '2 yrs exp' }, { initial: 'ZS', name: 'Zoe Simmons', rating: 4.8, years: '3 yrs exp' }] },
+  };
+
+  agentStepLabels = ['Reading job criteria & requirements', 'Scanning 34 applicant profiles', 'Scoring candidates against criteria', 'Ranking top matches', 'Drafting personalized outreach messages'];
+  jobCriteria = ['Forklift certified', '1+ yr warehouse experience', 'Available overnight', 'Within 15 miles'];
+
+  company = {
+    name: 'QuickCart Logistics', industry: 'Logistics & Delivery', hq: 'Austin, TX', founded: '2016', size: '201–500 employees', rating: 4.8, reviews: 342,
+    about: 'QuickCart Logistics runs same-day local delivery for grocery and retail partners across the Southwest. We built our driver program around flexible, well-paid shifts and fast weekly payouts.',
+    openRoles: [
+      { title: 'Delivery Driver — Same-Day Routes', location: 'Austin, TX', pay: '$22/hr', jobId: 1 },
+      { title: 'Warehouse Picker — Day Shift', location: 'Austin, TX', pay: '$19/hr', jobId: null },
+      { title: 'Route Supervisor', location: 'Austin, TX', pay: '$26/hr', jobId: null },
+    ],
+  };
+
+  adminStats = [
+    { label: 'Active job posts', value: '1,284' },
+    { label: 'Verified workers', value: '9,532' },
+    { label: 'Flagged reports', value: '7' },
+    { label: 'Avg. time to hire', value: '4.2 hrs' },
+  ];
+  recentUsers = [
+    { name: 'Marcus Reyes', role: 'Job Seeker', joined: '2 days ago', status: 'Active', statusStyle: pill('#1f9d6b') },
+    { name: 'Fulcrum Distribution', role: 'Employer', joined: '3 days ago', status: 'Active', statusStyle: pill('#1f9d6b') },
+    { name: 'Dana Okafor', role: 'Job Seeker', joined: '4 days ago', status: 'Active', statusStyle: pill('#1f9d6b') },
+    { name: 'Swift Parcel Co.', role: 'Employer', joined: '1 week ago', status: 'Suspended', statusStyle: pill('#c0392b') },
+    { name: 'Tasha Greene', role: 'Job Seeker', joined: '1 week ago', status: 'Active', statusStyle: pill('#1f9d6b') },
+  ];
+
+  componentDidMount() {
+    if (this.props.startPage) this.setState({ page: this.props.startPage });
+  }
+  componentWillUnmount() {
+    clearTimeout(this._agentTimer);
+  }
+  componentDidUpdate(prevProps, prevState) {
+    if (this.state.page === 'aiAgent' && prevState.page !== 'aiAgent' && this.props.agentAutoDemo && this.state.agentState === 'idle') {
+      this.startAgent();
+    }
+  }
+
+  navigate = (page) => { this.setState({ page }); if (typeof window !== 'undefined') window.scrollTo(0, 0); };
+  toggleNav = () => this.setState((s) => ({ navOpen: !s.navOpen }));
+  goLanding = () => this.navigate('landing');
+  goListings = () => { this.navigate('listings'); this.setState({ navOpen: false }); };
+  goLogin = () => this.navigate('login');
+  goSignup = () => this.navigate('signup');
+  goAdmin = () => this.navigate('admin');
+  goCompanyProfile = () => { this.navigate('companyProfile'); this.setState({ navOpen: false }); };
+  goEmployerLogin = () => { this.setState({ authRoleTab: 'employer', navOpen: false }); this.navigate('login'); };
+  goAiAgent = () => this.navigate('aiAgent');
+  goLoginAndClose = () => { this.setState({ navOpen: false }); this.navigate('login'); };
+  goSignupAndClose = () => { this.setState({ navOpen: false }); this.navigate('signup'); };
+  goAdminAndClose = () => { this.setState({ navOpen: false }); this.navigate('admin'); };
+  onLoginSubmit = () => this.navigate(this.state.authRoleTab === 'employer' ? 'employerDashboard' : 'seekerDashboard');
+  setRoleSeeker = () => this.setState({ authRoleTab: 'seeker' });
+  setRoleEmployer = () => this.setState({ authRoleTab: 'employer' });
+
+  selectHeroCategory = (cat) => this.setState((s) => ({ heroCategory: s.heroCategory === cat ? null : cat }));
+  onSeeAllHeroMatches = () => { this.setState({ listingsCategory: this.state.heroCategory || 'All Categories' }); this.navigate('listings'); };
+  setHeroModeSeeker = () => this.setState({ heroMode: 'seeker' });
+  setHeroModeEmployer = () => this.setState({ heroMode: 'employer' });
+
+  setListingsSearch = (e) => this.setState({ listingsSearch: e.target.value });
+  setListingsCategory = (c) => this.setState({ listingsCategory: c });
+  selectJob = (id) => { this.setState({ selectedJobId: id }); this.navigate('jobDetail'); };
+  toggleSave = (id) => this.setState((s) => ({ savedJobIds: s.savedJobIds.includes(id) ? s.savedJobIds.filter((x) => x !== id) : [...s.savedJobIds, id] }));
+  applyToJob = (job) => this.setState((s) => (s.applications.some((a) => a.jobId === job.id) ? null : { applications: [{ id: Date.now(), jobId: job.id, jobTitle: job.title, company: job.company, appliedAt: 'Just now', status: 'Applied', statusStyle: pill('#c1502c') }, ...s.applications] }));
+
+  setSeekerTab = (t) => this.setState({ seekerTab: t });
+  selectEmployerJob = (id) => this.setState({ selectedEmployerJobId: id });
+  onPublishJob = () => this.navigate('employerDashboard');
+
+  startAgent = () => {
+    if (this.state.agentState === 'running') return;
+    this.setState({ agentState: 'running', agentStepIndex: 0 });
+    const advance = (i) => {
+      this._agentTimer = setTimeout(() => {
+        if (i < this.agentStepLabels.length - 1) { this.setState({ agentStepIndex: i + 1 }); advance(i + 1); }
+        else this.setState({ agentState: 'done' });
+      }, 850);
+    };
+    advance(0);
+  };
+  approveCandidate = (id) => this.setState((s) => ({ agentCandidates: s.agentCandidates.map((c) => (c.id === id ? { ...c, status: 'sent' } : c)) }));
+  dismissCandidate = (id) => this.setState((s) => ({ agentCandidates: s.agentCandidates.map((c) => (c.id === id ? { ...c, status: 'dismissed' } : c)) }));
+
+  setAdminTab = (t) => this.setState({ adminTab: t });
+  removeFlagged = (id) => this.setState((s) => ({ flaggedListings: s.flaggedListings.filter((f) => f.id !== id) }));
+
+  renderVals() {
+    const s = this.state;
+    const accent = this.props.accentColor || '#c1502c';
+    const page = s.page;
+    const isLanding = page === 'landing', isLogin = page === 'login', isSignup = page === 'signup', isListings = page === 'listings', isJobDetail = page === 'jobDetail', isSeekerDashboard = page === 'seekerDashboard', isPostJob = page === 'postJob', isEmployerDashboard = page === 'employerDashboard', isAiAgent = page === 'aiAgent', isCompanyProfile = page === 'companyProfile', isAdmin = page === 'admin';
+    const isAppShell = isSeekerDashboard || isPostJob || isEmployerDashboard || isAiAgent || isAdmin;
+    const isMarketing = !isAppShell;
+    const appRole = isSeekerDashboard ? 'seeker' : (isPostJob || isEmployerDashboard || isAiAgent) ? 'employer' : isAdmin ? 'admin' : null;
+    const roleLabel = appRole === 'seeker' ? 'Job Seeker Account' : appRole === 'employer' ? 'Employer Account' : appRole === 'admin' ? 'Admin Console' : '';
+
+    const menuLinkStyle = (delay) => ({ display: 'block', font: "italic 400 52px 'Newsreader',serif", color: '#f5f3ee', padding: '14px 0', cursor: 'pointer', animation: `menuLinkIn 0.5s ease ${delay}s both` });
+    const navWordmarkStyle = { position: 'fixed', top: 16, left: 24, zIndex: 40, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', height: 42, background: '#201a15', padding: '0 14px', borderRadius: 999, boxShadow: '0 2px 10px rgba(21,19,15,0.22)' };
+    const navBtnStyle = { position: 'fixed', top: 24, right: 32, zIndex: 40, width: 46, height: 46, borderRadius: 999, background: '#15130f', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 14px rgba(21,19,15,0.22)' };
+    const menuLinks = [
+      { label: 'Find Work', onClick: this.goListings, style: menuLinkStyle(0.05) },
+      { label: 'Hire Talent', onClick: this.goEmployerLogin, style: menuLinkStyle(0.15) },
+      { label: 'Company Directory', onClick: this.goCompanyProfile, style: menuLinkStyle(0.25) },
+    ];
+
+    const navBtn = (active) => ({ display: 'block', width: '100%', textAlign: 'left', padding: '10px 24px', border: 'none', borderLeft: active ? `2px solid ${accent}` : '2px solid transparent', cursor: 'pointer', font: active ? "500 15px 'Newsreader',serif" : "400 14px 'IBM Plex Sans',sans-serif", background: 'transparent', color: active ? accent : '#3a3830', marginBottom: 2 });
+    const seekerNavItems = [{ label: 'Dashboard', onClick: () => this.navigate('seekerDashboard'), style: navBtn(isSeekerDashboard) }, { label: 'Find Jobs', onClick: () => this.navigate('listings'), style: navBtn(isListings) }];
+    const employerNavItems = [{ label: 'Dashboard', onClick: () => this.navigate('employerDashboard'), style: navBtn(isEmployerDashboard) }, { label: 'Post a Job', onClick: () => this.navigate('postJob'), style: navBtn(isPostJob) }, { label: 'AI Screening Agent', onClick: () => this.navigate('aiAgent'), style: navBtn(isAiAgent) }];
+    const adminNavItems = [{ label: 'Overview', onClick: () => this.setAdminTab('overview'), style: navBtn(s.adminTab === 'overview') }, { label: 'Moderation Queue', onClick: () => this.setAdminTab('moderation'), style: navBtn(s.adminTab === 'moderation') }, { label: 'Users', onClick: () => this.setAdminTab('users'), style: navBtn(s.adminTab === 'users') }];
+    const sidebarNavItems = appRole === 'seeker' ? seekerNavItems : appRole === 'employer' ? employerNavItems : appRole === 'admin' ? adminNavItems : [];
+
+    const ctaButtonStyle = `padding:11px 20px;border-radius:5px;border:none;background:${accent};color:#fff;font:600 14px 'IBM Plex Sans';cursor:pointer;`;
+    const ctaButtonStyleLg = `padding:15px 26px;border-radius:5px;border:none;background:${accent};color:#fff;font:600 15px 'IBM Plex Sans';cursor:pointer;`;
+
+    const catStyle = (active) => ({ display: 'block', width: '100%', textAlign: 'left', padding: '9px 0', border: 'none', cursor: 'pointer', marginBottom: 2, background: 'transparent', color: active ? accent : '#3a3830', font: active ? "500 14px 'IBM Plex Sans'" : "400 14px 'IBM Plex Sans'", borderBottom: active ? `1px solid ${accent}` : '1px solid transparent', width: 'fit-content' });
+    const categories = this.categories.map((c) => ({ label: c, onClick: () => this.setListingsCategory(c), style: catStyle(s.listingsCategory === c) }));
+
+    const searchLower = s.listingsSearch.toLowerCase();
+    const filteredJobs = this.jobs.filter((j) => (s.listingsCategory === 'All Categories' || j.category === s.listingsCategory) && (j.title.toLowerCase().includes(searchLower) || j.company.toLowerCase().includes(searchLower)));
+    const jobsWithMeta = filteredJobs.map((j) => {
+      const saved = s.savedJobIds.includes(j.id), applied = s.applications.some((a) => a.jobId === j.id);
+      return { ...j, isSaved: saved, saveLabel: saved ? '✓ Saved' : '+ Save', applyLabel: applied ? 'Applied ✓' : 'Apply Now', onSelect: () => this.selectJob(j.id), onToggleSave: () => this.toggleSave(j.id), onApply: () => this.applyToJob(j), applyBtnStyle: applied ? 'padding:8px 14px;border-radius:5px;border:1px solid rgba(21,19,15,0.2);background:#f0eee7;font:500 12px "IBM Plex Sans";color:#5c584f;cursor:default;' : `padding:8px 14px;border-radius:5px;border:none;background:${accent};color:#fff;font:500 12px 'IBM Plex Sans';cursor:pointer;` };
+    });
+
+    const featuredJobs = this.jobs.slice(0, 3).map((j) => ({ ...j, onSelect: () => this.selectJob(j.id) }));
+
+    const selectedJob = this.jobs.find((j) => j.id === s.selectedJobId) || this.jobs[0];
+    const selectedApplied = s.applications.some((a) => a.jobId === selectedJob.id);
+    const selectedSaved = s.savedJobIds.includes(selectedJob.id);
+    const similarJobs = this.jobs.filter((j) => j.category === selectedJob.category && j.id !== selectedJob.id).slice(0, 3).map((j) => ({ ...j, onSelect: () => this.selectJob(j.id) }));
+
+    const savedJobsList = this.jobs.filter((j) => s.savedJobIds.includes(j.id)).map((j) => ({ ...j, onSelect: () => this.selectJob(j.id) }));
+
+    const employerJobsView = this.employerJobs.map((j) => ({ ...j, active: j.id === s.selectedEmployerJobId, rowStyle: { padding: '18px 0', borderTop: '1px solid rgba(21,19,15,0.12)', background: 'transparent', outline: j.id === s.selectedEmployerJobId ? `1px solid ${accent}` : 'none', outlineOffset: '4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }, onSelect: () => this.selectEmployerJob(j.id) }));
+    const selectedEmployerJob = this.employerJobs.find((j) => j.id === s.selectedEmployerJobId) || this.employerJobs[0];
+    const isSelectedEmployerJobAgentEligible = s.selectedEmployerJobId === 2;
+    const applicantsForSelected = s.selectedEmployerJobId === 1 ? this.job1Applicants : s.selectedEmployerJobId === 3 ? this.job3Applicants : [];
+
+    const agentStepsView = this.agentStepLabels.map((label, i) => {
+      const done = i < s.agentStepIndex || s.agentState === 'done';
+      const active = i === s.agentStepIndex && s.agentState === 'running';
+      return { label, mark: done ? '✓' : '', opacity: active ? 'opacity:1;animation:fadeIn 0.3s;' : done ? 'opacity:1;' : 'opacity:0.4;', dotStyle: `width:20px;height:20px;border-radius:999px;display:flex;align-items:center;justify-content:center;font:500 11px 'IBM Plex Sans';flex-shrink:0;background:${done ? '#e7f7ef' : '#f0eee7'};color:${done ? '#1f9d6b' : '#8a857a'};` };
+    });
+    const agentCandidatesView = s.agentCandidates.map((c) => ({ ...c, isPending: c.status === 'pending', isSent: c.status === 'sent', isDismissed: c.status === 'dismissed', onApprove: () => this.approveCandidate(c.id), onDismiss: () => this.dismissCandidate(c.id) }));
+    const agentTopMatchCount = s.agentCandidates.filter((c) => c.matchScore >= 85).length;
+
+    const roleTabStyle = (active) => `flex:1;padding:11px;border:none;border-bottom:2px solid ${active ? accent : 'transparent'};cursor:pointer;font:${active ? '500' : '400'} 14px 'Newsreader',serif;background:transparent;color:${active ? '#15130f' : '#8a857a'};margin-bottom:-1px;`;
+
+    const companyOpenRoles = this.company.openRoles.map((r) => ({ ...r, onClick: r.jobId ? () => this.selectJob(r.jobId) : () => this.navigate('listings') }));
+
+    const isHeroModeSeeker = s.heroMode === 'seeker', isHeroModeEmployer = s.heroMode === 'employer';
+    const heroModeTabStyle = (mode, active) => ({ padding: '9px 20px', borderRadius: 999, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap', font: `${active ? '600' : '400'} 13.5px 'IBM Plex Sans'`, background: active ? (mode === 'employer' ? '#2f7d78' : '#c1502c') : 'transparent', color: active ? '#f5f3ee' : '#5c584f' });
+    const heroChips = this.categories.filter((c) => c !== 'All Categories').map((c) => ({ label: c, onClick: () => this.selectHeroCategory(c), style: { padding: '9px 16px', borderRadius: 999, border: `1px solid ${s.heroCategory === c ? accent : 'rgba(21,19,15,0.2)'}`, background: s.heroCategory === c ? accent : 'transparent', color: s.heroCategory === c ? '#fff' : '#3a3830', font: '500 13px "IBM Plex Sans"', cursor: 'pointer' } }));
+    const heroPrompt = isHeroModeSeeker ? 'What kind of work are you looking for?' : 'What kind of talent are you hiring?';
+    const heroMatches = (s.heroCategory ? this.jobs.filter((j) => j.category === s.heroCategory) : this.jobs.slice(0, 3)).slice(0, 3).map((j) => ({ ...j, onSelect: () => this.selectJob(j.id) }));
+    const heroSeeAllLabel = s.heroCategory ? `See all ${this.jobs.filter((j) => j.category === s.heroCategory).length} ${s.heroCategory} jobs →` : 'Browse all jobs →';
+    const heroMatchesGridStyle = { display: 'grid', gridTemplateColumns: `repeat(${Math.max(heroMatches.length, 1)}, 1fr)`, gap: 1, background: 'rgba(21,19,15,0.1)', border: heroMatches.length ? '1px solid rgba(21,19,15,0.1)' : 'none', minHeight: heroMatches.length ? 'auto' : 0 };
+    const workerData = this.availableWorkersByCategory[s.heroCategory] || null;
+    const heroWorkerSample = workerData ? workerData.sample : [this.availableWorkersByCategory['Delivery'].sample[0], this.availableWorkersByCategory['Warehouse'].sample[0], this.availableWorkersByCategory['Events & Hospitality'].sample[0]];
+    const heroWorkerCount = workerData ? workerData.count : Object.values(this.availableWorkersByCategory).reduce((sum, v) => sum + v.count, 0);
+    const heroWorkerCountLabel = `${heroWorkerCount.toLocaleString()} workers available${s.heroCategory ? ' in ' + s.heroCategory : ' near you'}`;
+    const heroWorkersGridStyle = { display: 'grid', gridTemplateColumns: `repeat(${heroWorkerSample.length}, 1fr)`, gap: 1, background: 'rgba(21,19,15,0.1)', border: '1px solid rgba(21,19,15,0.1)' };
+    const heroPostJobLabel = s.heroCategory ? `Post a ${s.heroCategory} job →` : 'Post a job free →';
+
+    const flaggedListings = s.flaggedListings.map((f) => ({ ...f, onRemove: () => this.removeFlagged(f.id) }));
+
+    return {
+      navOpen: s.navOpen, toggleNav: this.toggleNav, menuLinks, navWordmarkStyle, navBtnStyle,
+      isLanding, isLogin, isSignup, isListings, isJobDetail, isSeekerDashboard, isPostJob, isEmployerDashboard, isAiAgent, isCompanyProfile, isAdmin, isAppShell, isMarketing,
+      accent, ctaButtonStyle, ctaButtonStyleLg, roleLabel, sidebarNavItems,
+      goLanding: this.goLanding, goListings: this.goListings, goLogin: this.goLogin, goSignup: this.goSignup, goAdmin: this.goAdmin, goCompanyProfile: this.goCompanyProfile, goEmployerLogin: this.goEmployerLogin, goAiAgent: this.goAiAgent,
+      goLoginAndClose: this.goLoginAndClose, goSignupAndClose: this.goSignupAndClose, goAdminAndClose: this.goAdminAndClose,
+      trustStats: [{ label: 'Gig workers', value: '50K+' }, { label: 'Employers', value: '12K+' }, { label: 'Avg. rating', value: '4.8' }, { label: 'Avg. time to hire', value: '35 min' }],
+      howItWorksSeeker: [{ num: '01', title: 'Browse & apply', body: 'Search shifts by pay, distance, and schedule — apply in one tap.' }, { num: '02', title: 'Get matched fast', body: 'Verified employers respond in minutes, not days.' }, { num: '03', title: 'Get paid weekly', body: 'Track hours and get paid on a reliable weekly schedule.' }],
+      featuredJobs,
+      categories, listingsSearch: s.listingsSearch, setListingsSearch: this.setListingsSearch, jobsWithMeta, resultCount: jobsWithMeta.length,
+      isHeroModeSeeker, isHeroModeEmployer, setHeroModeSeeker: this.setHeroModeSeeker, setHeroModeEmployer: this.setHeroModeEmployer,
+      heroModeSeekerStyle: heroModeTabStyle('seeker', isHeroModeSeeker), heroModeEmployerStyle: heroModeTabStyle('employer', isHeroModeEmployer), heroPrompt,
+      heroChips, heroMatches, heroMatchesGridStyle, heroSeeAllLabel, onSeeAllHeroMatches: this.onSeeAllHeroMatches,
+      heroWorkerSample, heroWorkerCountLabel, heroWorkersGridStyle, heroPostJobLabel,
+      selectedJob, selectedJobMeta: { isSaved: selectedSaved, hasApplied: selectedApplied }, similarJobs, hasSimilarJobs: similarJobs.length > 0,
+      selectedJobCompanyLinkable: selectedJob.company === this.company.name, selectedJobCompanyNotLinkable: selectedJob.company !== this.company.name,
+      onApplySelected: () => this.applyToJob(selectedJob), applySelectedLabel: selectedApplied ? 'Applied ✓' : 'Apply now', applySelectedBtnStyle: selectedApplied ? 'width:100%;padding:13px;border-radius:5px;border:none;background:#f0eee7;color:#5c584f;font:600 15px "IBM Plex Sans";cursor:default;' : `width:100%;padding:13px;border-radius:5px;border:none;background:${accent};color:#fff;font:600 15px 'IBM Plex Sans';cursor:pointer;`,
+      onToggleSaveSelected: () => this.toggleSave(selectedJob.id), saveSelectedLabel: selectedSaved ? '✓ Saved' : '+ Save for later',
+      company: { ...this.company, openRoles: companyOpenRoles },
+      authRoleTab: s.authRoleTab, setRoleSeeker: this.setRoleSeeker, setRoleEmployer: this.setRoleEmployer, onLoginSubmit: this.onLoginSubmit,
+      roleTabSeekerStyle: roleTabStyle(s.authRoleTab === 'seeker'), roleTabEmployerStyle: roleTabStyle(s.authRoleTab === 'employer'),
+      seekerTab: s.seekerTab, setSeekerTabApplications: () => this.setSeekerTab('applications'), setSeekerTabSaved: () => this.setSeekerTab('saved'), isSeekerTabApplications: s.seekerTab === 'applications', isSeekerTabSaved: s.seekerTab === 'saved',
+      seekerTabApplicationsStyle: roleTabStyle(s.seekerTab === 'applications'), seekerTabSavedStyle: roleTabStyle(s.seekerTab === 'saved'),
+      applications: s.applications, savedJobsList,
+      employerJobsView, selectedEmployerJob, isSelectedEmployerJobAgentEligible, applicantsForSelected, hasApplicantsForSelected: applicantsForSelected.length > 0,
+      onPublishJob: this.onPublishJob,
+      jobCriteria: this.jobCriteria, isAgentIdle: s.agentState === 'idle', isAgentRunning: s.agentState === 'running', isAgentDone: s.agentState === 'done', startAgent: this.startAgent, agentStepsView, agentCandidatesView, agentTopMatchCount,
+      adminTab: s.adminTab, isAdminOverview: s.adminTab === 'overview', isAdminModeration: s.adminTab === 'moderation', isAdminUsers: s.adminTab === 'users', adminStats: this.adminStats, flaggedListings, recentUsers: this.recentUsers,
+    };
+  }
+}
+function pill(color) { return `font:500 12px 'IBM Plex Sans',sans-serif;letter-spacing:0.01em;color:${color};`; }
+
+</script>
+</body>
+</html>

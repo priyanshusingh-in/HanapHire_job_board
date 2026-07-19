@@ -1,0 +1,75 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-ibm-plex-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-newsreader), Georgia, serif;
+
+  /* Surfaces */
+  --color-paper: #faf8f4;
+  --color-ink: #201a15;
+  --color-cream: #f5f3ee;
+
+  /* Text */
+  --color-text-primary: #15130f;
+  --color-text-body: #3a3830;
+  --color-text-muted: #5c584f;
+  --color-text-faint: #8a857a;
+
+  /* Brand accents — two-accent system: `accent` for general brand actions,
+     `accent-ai` reserved exclusively for AI Screening Agent UI + the employer/"Hiring" mode toggle. */
+  --color-accent: #c1502c;
+  --color-accent-hover: #8f3a1e;
+  --color-accent-ai: #2f7d78;
+
+  /* Semantic */
+  --color-success: #1f9d6b;
+  --color-danger: #c0392b;
+  --color-warning: #b5730b;
+
+  /* Radii: 5-6px controls, fully round pills (rounded-full covers pills) */
+  --radius-md: 6px;
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes menu-link-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes overlay-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

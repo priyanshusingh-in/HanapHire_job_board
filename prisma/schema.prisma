@@ -1,0 +1,211 @@
+// Prisma schema for HanapHire.
+// Auth identity (auth.users) is owned by Supabase Auth and is NOT modeled here.
+// `Profile.id` is a plain uuid equal to the corresponding `auth.users.id`;
+// the FK constraint into `auth.users` is added via a raw-SQL migration
+// (see prisma/migrations/*_auth_profile_trigger) since Prisma does not manage the `auth` schema.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  SEEKER
+  EMPLOYER
+  ADMIN
+}
+
+enum JobStatus {
+  ACTIVE
+  CLOSED
+}
+
+enum ApplicationStatus {
+  APPLIED
+  VIEWED
+  INTERVIEW
+  HIRED
+  REJECTED
+}
+
+enum ScreeningStatus {
+  IDLE
+  RUNNING
+  DONE
+  FAILED
+}
+
+enum OutreachStatus {
+  PENDING
+  SENT
+  DISMISSED
+}
+
+enum RecommendedAction {
+  APPROVE
+  REVIEW
+  PASS
+}
+
+enum ListingSeverity {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum NotificationType {
+  SCREENING_COMPLETE
+}
+
+model Profile {
+  id            String         @id @default(uuid())
+  email         String         @unique
+  name          String
+  role          Role
+  suspended     Boolean        @default(false)
+  createdAt     DateTime       @default(now())
+  seekerProfile SeekerProfile?
+  company       Company?
+  notifications Notification[]
+
+  @@map("profiles")
+}
+
+model SeekerProfile {
+  id               String   @id @default(uuid())
+  userId           String   @unique
+  user             Profile  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rating           Float    @default(0)
+  yearsExperience  Json     @default("{}")
+  certifications   String[]
+  availability     String   @default("")
+  distanceRadiusMi Int      @default(25)
+  savedJobIds      String[]
+
+  applications Application[]
+
+  @@map("seeker_profiles")
+}
+
+model Company {
+  id          String  @id @default(uuid())
+  ownerUserId String  @unique
+  owner       Profile @relation(fields: [ownerUserId], references: [id], onDelete: Cascade)
+  name        String
+  slug        String  @unique
+  industry    String
+  hq          String
+  founded     String
+  size        String
+  about       String
+  rating      Float   @default(0)
+  reviewCount Int     @default(0)
+  logoUrl     String?
+  bannerUrl   String?
+
+  jobs Job[]
+
+  @@map("companies")
+}
+
+model Job {
+  id                String     @id @default(uuid())
+  companyId         String
+  company           Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  title             String
+  category          String
+  payType           String
+  payAmount         Decimal
+  payDisplay        String
+  location          String
+  distanceMi        Float?
+  shift             String
+  urgent            Boolean    @default(false)
+  verifiedEmployer  Boolean    @default(false)
+  status            JobStatus  @default(ACTIVE)
+  description       String
+  requirements      String[]
+  screeningCriteria Json
+  matchThreshold    Int        @default(75)
+  payDetails        String
+  postedAt          DateTime   @default(now())
+
+  applications    Application[]
+  screeningRuns   ScreeningRun[]
+  flaggedListings FlaggedListing[]
+
+  @@index([category])
+  @@index([status])
+  @@map("jobs")
+}
+
+model Application {
+  id                String            @id @default(uuid())
+  jobId             String
+  job               Job               @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  seekerId          String
+  seeker            SeekerProfile     @relation(fields: [seekerId], references: [id], onDelete: Cascade)
+  status            ApplicationStatus @default(APPLIED)
+  appliedAt         DateTime          @default(now())
+  matchScore        Int?
+  rationale         String?
+  recommendedAction RecommendedAction?
+  outreachDraft     String?
+  outreachStatus    OutreachStatus    @default(PENDING)
+  outreachSentAt    DateTime?
+  screenedAt        DateTime?
+
+  @@unique([jobId, seekerId])
+  @@index([jobId, matchScore])
+  @@map("applications")
+}
+
+model ScreeningRun {
+  id            String          @id @default(uuid())
+  jobId         String
+  job           Job             @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  status        ScreeningStatus @default(IDLE)
+  currentStep   Int             @default(0)
+  scoredCount   Int             @default(0)
+  startedAt     DateTime?
+  completedAt   DateTime?
+  totalScreened Int             @default(0)
+  topMatchCount Int             @default(0)
+  error         String?
+  createdAt     DateTime        @default(now())
+
+  @@index([jobId, status])
+  @@map("screening_runs")
+}
+
+model FlaggedListing {
+  id         String          @id @default(uuid())
+  jobId      String
+  job        Job             @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  reason     String
+  severity   ListingSeverity
+  reportedAt DateTime        @default(now())
+  resolved   Boolean         @default(false)
+
+  @@map("flagged_listings")
+}
+
+model Notification {
+  id                 String           @id @default(uuid())
+  profileId          String
+  profile            Profile          @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  type               NotificationType
+  title              String
+  body               String
+  read               Boolean          @default(false)
+  relatedJobId       String?
+  relatedScreeningId String?
+  createdAt          DateTime         @default(now())
+
+  @@index([profileId, read])
+  @@map("notifications")
+}
