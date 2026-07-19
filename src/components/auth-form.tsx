@@ -8,7 +8,15 @@ import { createClient } from "@/lib/supabase/client";
 type RoleTab = "seeker" | "employer";
 type Mode = "login" | "signup";
 
-function roleHome(role: string | undefined) {
+// Routing hint only — never an authorization decision. app_metadata is
+// checked first since that's the trusted source the handle_new_user trigger
+// itself prefers (see prisma/migrations/*_harden_handle_new_user_role);
+// user_metadata is the fallback for publicly self-signed-up seeker/employer
+// accounts. The actual gate is requireRole() reading profiles.role from the
+// database server-side, so a stale or tampered client value here only ever
+// sends someone to the wrong page — it can't grant access to one.
+function roleHome(user: { app_metadata?: Record<string, unknown>; user_metadata?: Record<string, unknown> } | null | undefined) {
+  const role = (user?.app_metadata?.role ?? user?.user_metadata?.role) as string | undefined;
   if (role === "EMPLOYER") return "/employer";
   if (role === "ADMIN") return "/admin";
   return "/dashboard";
@@ -41,7 +49,7 @@ export function AuthForm({ mode, defaultRole }: { mode: Mode; defaultRole: RoleT
         setError(signInError.message);
         return;
       }
-      router.push(roleHome(data.user?.user_metadata?.role));
+      router.push(roleHome(data.user));
       router.refresh();
       return;
     }
@@ -63,7 +71,7 @@ export function AuthForm({ mode, defaultRole }: { mode: Mode; defaultRole: RoleT
       setConfirmationSent(true);
       return;
     }
-    router.push(roleHome(roleTab.toUpperCase()));
+    router.push(roleHome(data.user));
     router.refresh();
   }
 

@@ -14,11 +14,17 @@ async function ensureAuthUser(email: string, name: string, role: Role) {
   const existing = await prisma.profile.findUnique({ where: { email } });
   if (existing) return existing.id;
 
+  // ADMIN must go through app_metadata — the handle_new_user trigger only
+  // trusts role from there (only the service role can set it). user_metadata
+  // is reachable by any public signUp() call, so the trigger whitelists it
+  // to SEEKER/EMPLOYER only and would silently downgrade ADMIN if we put it
+  // there instead.
   const { data, error } = await supabaseAdmin.auth.admin.createUser({
     email,
     password: DEMO_PASSWORD,
     email_confirm: true,
-    user_metadata: { name, role },
+    user_metadata: { name },
+    app_metadata: { role },
   });
   if (error || !data.user) {
     throw error ?? new Error(`Failed to create auth user for ${email}`);
