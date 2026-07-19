@@ -1,16 +1,6 @@
--- Staged here until a live Supabase connection lets us run `prisma migrate dev`.
--- Once the initial migration (table creation) has been generated and applied,
--- this file's contents get folded into a second migration
--- (`prisma migrate dev --create-only --name auth_profile_trigger`) so it's
--- tracked by Prisma Migrate like everything else.
---
 -- Auto-creates a public.profiles row whenever Supabase Auth creates a new
 -- auth.users row. `name` and `role` come from the metadata passed at
 -- supabase.auth.signUp({ options: { data: { name, role } } }) time.
--- NOTE: verify the generated enum type name (should be "Role") against the
--- actual initial migration's CREATE TYPE statement before applying — Prisma
--- names Postgres enum types after the Prisma enum verbatim.
-
 create or replace function public.handle_new_user()
 returns trigger
 language plpgsql
