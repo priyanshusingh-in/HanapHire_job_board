@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -23,7 +22,6 @@ function roleHome(user: { app_metadata?: Record<string, unknown>; user_metadata?
 }
 
 export function AuthForm({ mode, defaultRole }: { mode: Mode; defaultRole: RoleTab }) {
-  const router = useRouter();
   const supabase = createClient();
 
   const [roleTab, setRoleTab] = useState<RoleTab>(defaultRole);
@@ -49,8 +47,13 @@ export function AuthForm({ mode, defaultRole }: { mode: Mode; defaultRole: RoleT
         setError(signInError.message);
         return;
       }
-      router.push(roleHome(data.user));
-      router.refresh();
+      // Hard navigation, not router.push(): the session cookie is written
+      // client-side (via document.cookie, triggered by Supabase's auth
+      // state listener) slightly after signInWithPassword() resolves. A
+      // client-side route change can beat that write to the server, so
+      // proxy.ts sees no session yet and bounces back to /login. A full
+      // page load always waits for the cookie to exist first.
+      window.location.href = roleHome(data.user);
       return;
     }
 
@@ -71,8 +74,7 @@ export function AuthForm({ mode, defaultRole }: { mode: Mode; defaultRole: RoleT
       setConfirmationSent(true);
       return;
     }
-    router.push(roleHome(data.user));
-    router.refresh();
+    window.location.href = roleHome(data.user);
   }
 
   if (confirmationSent) {
@@ -127,31 +129,49 @@ export function AuthForm({ mode, defaultRole }: { mode: Mode; defaultRole: RoleT
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-3.5">
         {mode === "signup" && (
-          <input
-            required
-            placeholder="Full name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="rounded-md border border-text-primary/20 px-3.5 py-3 text-[14.5px]"
-          />
+          <div>
+            <label htmlFor="name" className="sr-only">
+              Full name
+            </label>
+            <input
+              id="name"
+              required
+              placeholder="Full name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full rounded-md border border-text-primary/20 px-3.5 py-3 text-[14.5px]"
+            />
+          </div>
         )}
-        <input
-          required
-          type="email"
-          placeholder="Email address"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="rounded-md border border-text-primary/20 px-3.5 py-3 text-[14.5px]"
-        />
-        <input
-          required
-          type="password"
-          minLength={8}
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="rounded-md border border-text-primary/20 px-3.5 py-3 text-[14.5px]"
-        />
+        <div>
+          <label htmlFor="email" className="sr-only">
+            Email address
+          </label>
+          <input
+            id="email"
+            required
+            type="email"
+            placeholder="Email address"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full rounded-md border border-text-primary/20 px-3.5 py-3 text-[14.5px]"
+          />
+        </div>
+        <div>
+          <label htmlFor="password" className="sr-only">
+            Password
+          </label>
+          <input
+            id="password"
+            required
+            type="password"
+            minLength={8}
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full rounded-md border border-text-primary/20 px-3.5 py-3 text-[14.5px]"
+          />
+        </div>
 
         {error && <p className="text-sm text-danger">{error}</p>}
 

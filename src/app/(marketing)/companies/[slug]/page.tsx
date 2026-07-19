@@ -12,9 +12,11 @@ export async function generateMetadata({
   const company = await getCompanyBySlug(slug);
   if (!company) return {};
 
+  const description = company.about.slice(0, 155);
   return {
     title: company.name,
-    description: company.about.slice(0, 155),
+    description,
+    openGraph: { title: company.name, description },
   };
 }
 

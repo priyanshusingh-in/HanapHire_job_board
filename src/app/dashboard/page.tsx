@@ -3,10 +3,10 @@ import { requireRole } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 const STATUS_COLOR: Record<string, string> = {
-  APPLIED: "text-accent",
+  APPLIED: "text-accent-hover",
   VIEWED: "text-text-faint",
-  INTERVIEW: "text-accent",
-  HIRED: "text-success",
+  INTERVIEW: "text-accent-hover",
+  HIRED: "text-success-text",
   REJECTED: "text-danger",
 };
 
@@ -82,7 +82,7 @@ export default async function SeekerDashboardPage({
           {!seeker?.applications.length && (
             <div className="border-t border-text-primary/12 py-10 text-center text-sm text-text-muted">
               No applications yet.{" "}
-              <Link href="/jobs" className="text-accent">
+              <Link href="/jobs" className="text-accent-hover">
                 Browse jobs
               </Link>{" "}
               to get started.
@@ -109,7 +109,7 @@ export default async function SeekerDashboardPage({
           {savedJobs.length === 0 && (
             <div className="border-t border-text-primary/12 py-10 text-center text-sm text-text-muted">
               No saved jobs yet.{" "}
-              <Link href="/jobs" className="text-accent">
+              <Link href="/jobs" className="text-accent-hover">
                 Browse jobs
               </Link>{" "}
               and save the ones you like.

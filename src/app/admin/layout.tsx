@@ -12,6 +12,7 @@ export default async function AdminLayout({
     <AppShell
       role="ADMIN"
       name={profile.name}
+      profileId={profile.id}
       navItems={[
         { label: "Overview", href: "/admin" },
         { label: "Moderation Queue", href: "/admin/moderation" },

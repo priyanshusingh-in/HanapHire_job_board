@@ -50,7 +50,7 @@ export default async function JobsListingsPage({
               key={c}
               href={categoryHref(c)}
               className={`mb-0.5 block w-fit py-2 text-left text-sm ${
-                active ? "border-b border-accent font-medium text-accent" : "border-b border-transparent text-text-body"
+                active ? "border-b border-accent font-medium text-accent-hover" : "border-b border-transparent text-text-body"
               }`}
             >
               {c}
@@ -81,10 +81,10 @@ export default async function JobsListingsPage({
                   <div className="flex flex-wrap gap-3.5">
                     <span className="text-[11px] font-medium tracking-wide text-text-body uppercase">{job.shift}</span>
                     {job.urgent && (
-                      <span className="text-[11px] font-medium tracking-wide text-warning uppercase">Urgent</span>
+                      <span className="text-[11px] font-medium tracking-wide text-warning-text uppercase">Urgent</span>
                     )}
                     {job.verifiedEmployer && (
-                      <span className="text-[11px] font-medium tracking-wide text-success uppercase">✓ Verified</span>
+                      <span className="text-[11px] font-medium tracking-wide text-success-text uppercase">✓ Verified</span>
                     )}
                   </div>
                 </div>

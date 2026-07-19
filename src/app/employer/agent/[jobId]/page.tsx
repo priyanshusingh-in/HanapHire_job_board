@@ -123,8 +123,8 @@ export default async function AiAgentPage({
         <>
           <div className="mb-6 flex items-center justify-between border border-success px-6 py-5">
             <div>
-              <div className="mb-0.5 font-serif text-[17px] text-[#146c46]">Screening complete</div>
-              <div className="text-[13px] text-success">
+              <div className="mb-0.5 font-serif text-[17px] text-success-text">Screening complete</div>
+              <div className="text-[13px] text-success-text">
                 {topMatchCount} top matches found from {totalScreened} applicants
               </div>
             </div>

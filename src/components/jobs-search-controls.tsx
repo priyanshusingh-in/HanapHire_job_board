@@ -34,13 +34,21 @@ export function JobsSearchControls() {
 
   return (
     <div className="mb-6.5 flex gap-3">
+      <label htmlFor="job-search" className="sr-only">
+        Search job title or company
+      </label>
       <input
+        id="job-search"
         value={search}
         onChange={(e) => onSearchChange(e.target.value)}
         placeholder="Search job title or company"
         className="flex-1 rounded-md border border-text-primary/20 bg-white px-4 py-3.5 text-[15px]"
       />
+      <label htmlFor="job-sort" className="sr-only">
+        Sort jobs by
+      </label>
       <select
+        id="job-sort"
         defaultValue={searchParams.get("sort") ?? "relevant"}
         onChange={(e) => pushParams({ sort: e.target.value === "relevant" ? null : e.target.value })}
         className="rounded-md border border-text-primary/20 bg-white px-4 py-3.5 text-sm font-medium"

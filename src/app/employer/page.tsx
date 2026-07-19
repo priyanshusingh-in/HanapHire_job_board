@@ -3,15 +3,15 @@ import { requireRole } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 const STATUS_STYLE: Record<string, string> = {
-  ACTIVE: "text-success",
+  ACTIVE: "text-success-text",
   CLOSED: "text-text-faint",
 };
 
 const APPLICANT_STATUS_STYLE: Record<string, string> = {
-  APPLIED: "text-accent",
+  APPLIED: "text-accent-hover",
   VIEWED: "text-text-faint",
-  INTERVIEW: "text-accent",
-  HIRED: "text-success",
+  INTERVIEW: "text-accent-hover",
+  HIRED: "text-success-text",
   REJECTED: "text-danger",
 };
 
@@ -65,7 +65,7 @@ export default async function EmployerDashboardPage({
       {jobs.length === 0 ? (
         <div className="border-t border-text-primary/14 py-10 text-center text-sm text-text-muted">
           You haven&apos;t posted a job yet.{" "}
-          <Link href="/employer/jobs/new" className="text-accent">
+          <Link href="/employer/jobs/new" className="text-accent-hover">
             Post your first job
           </Link>
           .

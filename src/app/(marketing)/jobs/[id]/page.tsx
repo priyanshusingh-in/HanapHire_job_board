@@ -49,7 +49,7 @@ export default async function JobDetailPage({
           ← Back to listings
         </Link>
         <h1 className="mt-5.5 mb-2 font-serif text-4xl tracking-tight">{job.title}</h1>
-        <Link href={`/companies/${job.company.slug}`} className="mb-5 block font-serif text-lg text-accent italic">
+        <Link href={`/companies/${job.company.slug}`} className="mb-5 block font-serif text-lg text-accent-hover italic">
           {job.company.name}
         </Link>
         <div className="mb-8 flex flex-wrap gap-4">

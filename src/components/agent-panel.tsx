@@ -32,6 +32,18 @@ export function AgentPanel({
   const router = useRouter();
   const [run, setRun] = useState<RunSnapshot>(initialRun);
   const [isPending, startTransition] = useTransition();
+  const [showRetry, setShowRetry] = useState(false);
+
+  useEffect(() => {
+    if (!run || run.status !== "RUNNING") return;
+    // The server only actually resets a run past ~3 minutes stale (see
+    // startAgent) — this timer just decides when to surface the option.
+    // Clicking before then is a harmless no-op (server returns the same
+    // still-in-flight run unchanged).
+    const timer = setTimeout(() => setShowRetry(true), 60_000);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [run?.id, run?.status]);
 
   useEffect(() => {
     if (!run || run.status !== "RUNNING") return;
@@ -66,14 +78,16 @@ export function AgentPanel({
   function handleStart() {
     startTransition(async () => {
       const created = await startAgent(jobId);
-      setRun({ id: created.id, status: "RUNNING", currentStep: 0, error: null });
+      setShowRetry(false);
+      setRun({ id: created.id, status: created.status, currentStep: created.currentStep, error: created.error });
     });
   }
 
   function handleRescreen() {
     startTransition(async () => {
       const created = await rescreenApplicants(jobId);
-      setRun({ id: created.id, status: "RUNNING", currentStep: 0, error: null });
+      setShowRetry(false);
+      setRun({ id: created.id, status: created.status, currentStep: created.currentStep, error: created.error });
     });
   }
 
@@ -112,7 +126,7 @@ export function AgentPanel({
               <div key={label} className={`flex items-center gap-3 ${isDoneStep || isActive ? "opacity-100" : "opacity-40"}`}>
                 <div
                   className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-medium ${
-                    isDoneStep ? "bg-[#e7f7ef] text-success" : "bg-[#f0eee7] text-text-faint"
+                    isDoneStep ? "bg-[#e7f7ef] text-success-text" : "bg-[#f0eee7] text-text-faint"
                   }`}
                 >
                   {isDoneStep ? "✓" : ""}
@@ -125,6 +139,19 @@ export function AgentPanel({
         <div className="mt-6 text-xs text-text-faint">
           Feel free to navigate elsewhere — we&apos;ll notify you the moment it&apos;s done.
         </div>
+        {showRetry && (
+          <div className="mt-4 border-t border-text-primary/12 pt-4">
+            <div className="mb-2 text-xs text-text-muted">Taking longer than expected?</div>
+            <button
+              type="button"
+              onClick={handleRescreen}
+              disabled={isPending}
+              className="rounded-md border border-text-primary/20 bg-white px-4 py-2 text-[13px] font-medium disabled:opacity-60"
+            >
+              Retry
+            </button>
+          </div>
+        )}
       </div>
     );
   }

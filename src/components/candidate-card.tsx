@@ -75,6 +75,7 @@ export function CandidateCard({ candidate }: { candidate: Candidate }) {
             onChange={(e) => setDraft(e.target.value)}
             maxLength={400}
             rows={4}
+            aria-label={`Edit drafted outreach message to ${candidate.name}`}
             className="input mb-2 resize-y"
           />
           <div className="flex gap-2">
@@ -132,7 +133,7 @@ export function CandidateCard({ candidate }: { candidate: Candidate }) {
           </button>
         </div>
       )}
-      {status === "SENT" && <span className="text-[13px] font-medium text-success">✓ Outreach sent</span>}
+      {status === "SENT" && <span className="text-[13px] font-medium text-success-text">✓ Outreach sent</span>}
       {status === "DISMISSED" && <span className="text-[13px] font-medium text-text-faint">Dismissed</span>}
     </div>
   );

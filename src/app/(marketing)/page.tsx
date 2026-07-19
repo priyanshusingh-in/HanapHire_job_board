@@ -24,7 +24,7 @@ export default async function LandingPage() {
   return (
     <>
       <section className="bg-ink">
-        <div className="mx-auto max-w-3xl px-8 pt-30 pb-30 text-center">
+        <div className="mx-auto max-w-3xl px-6 pt-20 pb-20 text-center sm:px-8 sm:pt-30 sm:pb-30">
           <div className="mb-6.5 font-serif text-lg text-accent italic">On-demand hiring, made instant</div>
           <h1 className="mb-6.5 font-serif text-6xl leading-[1.1] font-medium tracking-tight text-cream sm:text-7xl">
             Get hired today.
@@ -46,7 +46,7 @@ export default async function LandingPage() {
               Post a job free
             </Link>
           </div>
-          <div className="flex justify-center gap-14 border-t border-cream/14 pt-9">
+          <div className="flex flex-wrap justify-center gap-x-8 gap-y-5 border-t border-cream/14 pt-9 sm:gap-x-14">
             {[
               { label: "Gig workers", value: "50K+" },
               { label: "Employers", value: "12K+" },
@@ -62,14 +62,25 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      <HeroWidget jobs={heroJobs} workersByCategory={workersByCategory} totalWorkerCount={totalWorkerCount} />
+      <HeroWidget
+        jobs={heroJobs.map((job) => ({
+          id: job.id,
+          title: job.title,
+          category: job.category,
+          location: job.location,
+          payDisplay: job.payDisplay,
+          company: { name: job.company.name },
+        }))}
+        workersByCategory={workersByCategory}
+        totalWorkerCount={totalWorkerCount}
+      />
 
       <section className="mx-auto max-w-3xl px-8 pt-26 pb-22">
         <h2 className="mb-10 font-serif text-[34px] font-medium tracking-tight">How it works</h2>
         <div className="grid grid-cols-1 gap-10 sm:grid-cols-3">
           {HOW_IT_WORKS.map((step) => (
             <div key={step.num}>
-              <div className="mb-3.5 font-serif text-accent italic">{step.num}</div>
+              <div className="mb-3.5 font-serif text-accent-hover italic">{step.num}</div>
               <div className="mb-2.5 font-serif text-lg">{step.title}</div>
               <div className="text-sm leading-relaxed text-text-muted">{step.body}</div>
             </div>
@@ -95,7 +106,7 @@ export default async function LandingPage() {
                 <div className="mb-1.5 flex items-center gap-2.5">
                   <div className="font-serif text-lg">{job.title}</div>
                   {job.urgent && (
-                    <span className="border-b border-warning pb-0.5 text-[11px] font-medium tracking-wide text-warning uppercase">
+                    <span className="border-b border-warning pb-0.5 text-[11px] font-medium tracking-wide text-warning-text uppercase">
                       Urgent
                     </span>
                   )}

@@ -16,18 +16,18 @@ export default async function PostJobPage() {
 
       <form action={createJob} className="flex flex-col gap-4">
         {!company && (
-          <Field label="Company name">
-            <input name="companyName" required placeholder="Your business name" className="input" />
+          <Field label="Company name" htmlFor="companyName">
+            <input id="companyName" name="companyName" required placeholder="Your business name" className="input" />
           </Field>
         )}
 
-        <Field label="Job title">
-          <input name="title" required placeholder="e.g. Warehouse Associate — Overnight" className="input" />
+        <Field label="Job title" htmlFor="title">
+          <input id="title" name="title" required placeholder="e.g. Warehouse Associate — Overnight" className="input" />
         </Field>
 
-        <div className="grid grid-cols-2 gap-4">
-          <Field label="Category">
-            <select name="category" required defaultValue={CATEGORIES[0]} className="input bg-white">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <Field label="Category" htmlFor="category">
+            <select id="category" name="category" required defaultValue={CATEGORIES[0]} className="input bg-white">
               {CATEGORIES.map((c) => (
                 <option key={c} value={c}>
                   {c}
@@ -35,26 +35,27 @@ export default async function PostJobPage() {
               ))}
             </select>
           </Field>
-          <Field label="Pay rate">
-            <input name="payRate" required placeholder="$/hr or fixed" className="input" />
+          <Field label="Pay rate" htmlFor="payRate">
+            <input id="payRate" name="payRate" required placeholder="$/hr or fixed" className="input" />
           </Field>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <Field label="Location">
-            <input name="location" required placeholder="City, state" className="input" />
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <Field label="Location" htmlFor="location">
+            <input id="location" name="location" required placeholder="City, state" className="input" />
           </Field>
-          <Field label="Shift / schedule">
-            <input name="shift" required placeholder="Today 2pm–8pm" className="input" />
+          <Field label="Shift / schedule" htmlFor="shift">
+            <input id="shift" name="shift" required placeholder="Today 2pm–8pm" className="input" />
           </Field>
         </div>
 
-        <Field label="Description">
-          <textarea name="description" required rows={4} placeholder="Describe the role and daily tasks" className="input resize-y" />
+        <Field label="Description" htmlFor="description">
+          <textarea id="description" name="description" required rows={4} placeholder="Describe the role and daily tasks" className="input resize-y" />
         </Field>
 
-        <Field label="Screening criteria (used by the AI agent)">
+        <Field label="Screening criteria (used by the AI agent)" htmlFor="criteria">
           <textarea
+            id="criteria"
             name="criteria"
             rows={3}
             placeholder="e.g. Forklift certified, 1+ yr warehouse experience, available overnight"
@@ -70,10 +71,12 @@ export default async function PostJobPage() {
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({ label, htmlFor, children }: { label: string; htmlFor: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="mb-1.5 block text-xs font-medium tracking-wide text-text-muted uppercase">{label}</label>
+      <label htmlFor={htmlFor} className="mb-1.5 block text-xs font-medium tracking-wide text-text-muted uppercase">
+        {label}
+      </label>
       {children}
     </div>
   );
