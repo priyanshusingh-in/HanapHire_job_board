@@ -1,5 +1,6 @@
 "use server";
 
+import { after } from "next/server";
 import { revalidatePath } from "next/cache";
 import { requireRole } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -16,18 +17,35 @@ async function ownedJob(profileId: string, jobId: string) {
 // fire-and-forget kickTick() failed, or — in production — the cron hasn't
 // hit yet). Without this, startAgent's concurrency guard would return the
 // same dead run forever with no way for the employer to retry, since the
-// UI only offers a retry button for FAILED runs, not RUNNING ones.
-const STALE_RUN_MS = 3 * 60 * 1000;
+// UI only offers a retry button for FAILED runs, not RUNNING ones. Exported
+// so the client (agent-panel.tsx) can align its "offer a retry" timer to
+// the same threshold instead of guessing at an unrelated delay.
+export const STALE_RUN_MS = 3 * 60 * 1000;
 
-/** Kicks the tick endpoint immediately after enqueueing so the run starts within seconds instead of waiting for the next scheduled cron minute — fire-and-forget, the cron remains the reliable fallback. */
+/**
+ * Kicks the tick endpoint immediately after enqueueing so the run starts
+ * within seconds instead of waiting for the next scheduled cron minute —
+ * best-effort, the cron remains the reliable fallback. Wrapped in
+ * `after()`: a bare un-awaited fetch() here is not guaranteed to actually
+ * complete on Vercel's serverless runtime — the function can freeze
+ * immediately once the action's response is sent, before the fetch's
+ * network request finishes. `after()` keeps the function alive until the
+ * callback settles, without making the caller wait for it.
+ */
 function kickTick() {
   const site = process.env.NEXT_PUBLIC_SITE_URL;
   const secret = process.env.JOBS_TICK_SECRET;
   if (!site || !secret) return;
-  fetch(`${site}/api/jobs/tick`, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${secret}` },
-  }).catch((err) => console.error("[startAgent] immediate tick kick failed", err));
+  after(async () => {
+    try {
+      await fetch(`${site}/api/jobs/tick`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${secret}` },
+      });
+    } catch (err) {
+      console.error("[startAgent] immediate tick kick failed", err);
+    }
+  });
 }
 
 export async function startAgent(jobId: string) {

@@ -14,8 +14,11 @@ const PROTECTED_PREFIXES = ["/dashboard", "/employer", "/admin"];
 export async function proxy(request: NextRequest) {
   const { supabaseResponse, userId } = await updateSession(request);
 
-  const isProtected = PROTECTED_PREFIXES.some((prefix) =>
-    request.nextUrl.pathname.startsWith(prefix),
+  // Segment-aware, not a raw startsWith: a future public route sharing a
+  // prefix (e.g. "/employers" or "/employer-directory") would otherwise be
+  // swept into the auth gate unintentionally.
+  const isProtected = PROTECTED_PREFIXES.some(
+    (prefix) => request.nextUrl.pathname === prefix || request.nextUrl.pathname.startsWith(`${prefix}/`),
   );
 
   if (isProtected && !userId) {

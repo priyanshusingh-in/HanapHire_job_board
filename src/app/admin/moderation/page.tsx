@@ -1,5 +1,6 @@
 import { getFlaggedListings } from "@/lib/data/admin";
 import { removeFlaggedListing } from "@/lib/actions/admin";
+import { ConfirmSubmitButton } from "@/components/confirm-submit-button";
 
 const SEVERITY_STYLE: Record<string, string> = {
   HIGH: "text-danger",
@@ -33,9 +34,13 @@ export default async function AdminModerationPage() {
             <div className="flex items-center gap-3.5">
               <span className={`text-xs font-medium ${SEVERITY_STYLE[f.severity]}`}>{f.reason}</span>
               <form action={removeFlaggedListing.bind(null, f.id)}>
-                <button type="submit" className="rounded-md bg-danger px-3.5 py-2 text-xs font-medium text-white">
-                  Remove
-                </button>
+                <ConfirmSubmitButton
+                  confirmMessage={`Remove "${f.job.title}"? This closes the listing and can't be undone from here.`}
+                  className="rounded-md bg-danger px-3.5 py-2 text-xs font-medium text-white"
+                >
+                  <span aria-hidden="true">Remove</span>
+                  <span className="sr-only">Remove {f.job.title}</span>
+                </ConfirmSubmitButton>
               </form>
             </div>
           </div>

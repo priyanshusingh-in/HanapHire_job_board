@@ -16,30 +16,51 @@ export type Candidate = {
   outreachStatus: "PENDING" | "SENT" | "DISMISSED";
 };
 
+function errorMessage(err: unknown) {
+  return err instanceof Error ? err.message : "Something went wrong — please try again.";
+}
+
 export function CandidateCard({ candidate }: { candidate: Candidate }) {
   const [isPending, startTransition] = useTransition();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(candidate.draftMessage);
   const [status, setStatus] = useState(candidate.outreachStatus);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   function handleApprove() {
+    setActionError(null);
     startTransition(async () => {
-      await approveAndSend(candidate.applicationId);
-      setStatus("SENT");
+      try {
+        await approveAndSend(candidate.applicationId);
+        setStatus("SENT");
+      } catch (err) {
+        setActionError(errorMessage(err));
+      }
     });
   }
 
   function handleDismiss() {
+    if (!confirm(`Dismiss ${candidate.name}? This can't be undone from here.`)) return;
+    setActionError(null);
     startTransition(async () => {
-      await dismissCandidate(candidate.applicationId);
-      setStatus("DISMISSED");
+      try {
+        await dismissCandidate(candidate.applicationId);
+        setStatus("DISMISSED");
+      } catch (err) {
+        setActionError(errorMessage(err));
+      }
     });
   }
 
   function handleSaveDraft() {
+    setActionError(null);
     startTransition(async () => {
-      await editOutreachDraft(candidate.applicationId, draft);
-      setEditing(false);
+      try {
+        await editOutreachDraft(candidate.applicationId, draft);
+        setEditing(false);
+      } catch (err) {
+        setActionError(errorMessage(err));
+      }
     });
   }
 
@@ -91,6 +112,7 @@ export function CandidateCard({ candidate }: { candidate: Candidate }) {
               type="button"
               onClick={() => {
                 setDraft(candidate.draftMessage);
+                setActionError(null);
                 setEditing(false);
               }}
               className="rounded-md border border-text-primary/20 bg-white px-4 py-2 text-[13px] font-medium"
@@ -103,6 +125,12 @@ export function CandidateCard({ candidate }: { candidate: Candidate }) {
         <div className="mb-4 border border-text-primary/14 px-4 py-3.5 text-[14.5px] leading-relaxed text-text-body">
           {draft}
         </div>
+      )}
+
+      {actionError && (
+        <p role="alert" className="mb-3 text-[13px] text-danger">
+          {actionError}
+        </p>
       )}
 
       {status === "PENDING" && !editing && (

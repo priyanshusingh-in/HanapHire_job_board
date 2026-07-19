@@ -3,7 +3,7 @@
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { startAgent, rescreenApplicants } from "@/lib/actions/agent";
+import { startAgent, rescreenApplicants, STALE_RUN_MS } from "@/lib/actions/agent";
 
 const STEP_LABELS = [
   "Reading job criteria & requirements",
@@ -18,6 +18,7 @@ export type RunSnapshot = {
   status: "IDLE" | "RUNNING" | "DONE" | "FAILED";
   currentStep: number;
   error: string | null;
+  startedAt: string | null;
 } | null;
 
 export function AgentPanel({
@@ -36,11 +37,17 @@ export function AgentPanel({
 
   useEffect(() => {
     if (!run || run.status !== "RUNNING") return;
-    // The server only actually resets a run past ~3 minutes stale (see
-    // startAgent) — this timer just decides when to surface the option.
-    // Clicking before then is a harmless no-op (server returns the same
-    // still-in-flight run unchanged).
-    const timer = setTimeout(() => setShowRetry(true), 60_000);
+    // Aligned to the server's actual stale threshold (STALE_RUN_MS from
+    // startAgent) via the run's real startedAt, rather than a flat delay
+    // from whenever this component happened to mount. A flat mount-relative
+    // timer meant revisiting an already-stuck run's page (e.g. after
+    // navigating away and back) restarted the countdown from zero, even if
+    // the run was already well past the point the server would actually
+    // reset it — so the retry option could take up to another full delay
+    // to reappear instead of showing right away.
+    const startedAt = run.startedAt ? new Date(run.startedAt).getTime() : Date.now();
+    const remaining = Math.max(0, STALE_RUN_MS - (Date.now() - startedAt));
+    const timer = setTimeout(() => setShowRetry(true), remaining);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [run?.id, run?.status]);
@@ -60,8 +67,9 @@ export function AgentPanel({
             status: RunSnapshot extends infer T ? (T extends { status: infer S } ? S : never) : never;
             currentStep: number;
             error: string | null;
+            startedAt: string | null;
           };
-          setRun({ id: next.id, status: next.status, currentStep: next.currentStep, error: next.error });
+          setRun({ id: next.id, status: next.status, currentStep: next.currentStep, error: next.error, startedAt: next.startedAt });
           if (next.status === "DONE" || next.status === "FAILED") {
             router.refresh();
           }
@@ -79,7 +87,13 @@ export function AgentPanel({
     startTransition(async () => {
       const created = await startAgent(jobId);
       setShowRetry(false);
-      setRun({ id: created.id, status: created.status, currentStep: created.currentStep, error: created.error });
+      setRun({
+        id: created.id,
+        status: created.status,
+        currentStep: created.currentStep,
+        error: created.error,
+        startedAt: created.startedAt?.toISOString() ?? null,
+      });
     });
   }
 
@@ -87,7 +101,13 @@ export function AgentPanel({
     startTransition(async () => {
       const created = await rescreenApplicants(jobId);
       setShowRetry(false);
-      setRun({ id: created.id, status: created.status, currentStep: created.currentStep, error: created.error });
+      setRun({
+        id: created.id,
+        status: created.status,
+        currentStep: created.currentStep,
+        error: created.error,
+        startedAt: created.startedAt?.toISOString() ?? null,
+      });
     });
   }
 
@@ -173,16 +193,38 @@ export function AgentPanel({
     );
   }
 
-  // DONE — results render server-side below this panel; just offer re-screen.
+  if (run.status === "DONE") {
+    // Results render server-side below this panel; just offer re-screen.
+    return (
+      <div className="mb-2 flex justify-end">
+        <button
+          type="button"
+          onClick={handleRescreen}
+          disabled={isPending}
+          className="rounded-md border border-text-primary/20 bg-white px-4 py-2 text-[13px] font-medium disabled:opacity-60"
+        >
+          Re-screen Applicants
+        </button>
+      </div>
+    );
+  }
+
+  // IDLE — the schema default, but startAgent() always creates runs as
+  // RUNNING, so this is unreachable in practice today. Guarded explicitly
+  // rather than falling through to the DONE branch above (which would
+  // offer "Re-screen Applicants" for a run that was never actually
+  // started) so a future code path that does create an IDLE row doesn't
+  // silently misrender.
   return (
-    <div className="mb-2 flex justify-end">
+    <div className="border border-dashed border-text-primary/28 bg-[#fdfcfa] p-9 text-center">
+      <div className="mb-2.5 font-serif text-lg">{applicantCount} applicants ready to screen</div>
       <button
         type="button"
-        onClick={handleRescreen}
+        onClick={handleStart}
         disabled={isPending}
-        className="rounded-md border border-text-primary/20 bg-white px-4 py-2 text-[13px] font-medium disabled:opacity-60"
+        className="rounded-md bg-accent px-6.5 py-3.5 text-[15px] font-semibold text-white disabled:opacity-60"
       >
-        Re-screen Applicants
+        Start Agent
       </button>
     </div>
   );

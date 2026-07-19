@@ -14,14 +14,19 @@ export async function listJobs(opts: {
 }) {
   const { category, search, sort = "relevant", page = 1, pageSize = 10 } = opts;
 
+  // Prisma's `contains` compiles to Postgres ILIKE, where `%`/`_` are
+  // wildcards — escape them so a literal search like "50%" only matches
+  // that literal substring instead of acting as a pattern.
+  const escapedSearch = search?.replace(/[%_\\]/g, (c) => `\\${c}`);
+
   const where = {
     ...activeJob,
     ...(category && category !== "All Categories" ? { category } : {}),
-    ...(search
+    ...(escapedSearch
       ? {
           OR: [
-            { title: { contains: search, mode: "insensitive" as const } },
-            { company: { name: { contains: search, mode: "insensitive" as const } } },
+            { title: { contains: escapedSearch, mode: "insensitive" as const } },
+            { company: { name: { contains: escapedSearch, mode: "insensitive" as const } } },
           ],
         }
       : {}),
@@ -59,6 +64,21 @@ export async function getFeaturedJobs(limit = 3) {
   });
 }
 
+/**
+ * True per-category active-job counts, for surfaces like the hero widget's
+ * "See all N {category} jobs" — deriving that count from a capped sample
+ * (e.g. the top 100 most-recent jobs) undercounts once total listings
+ * exceed the cap, since jobs outside the sample are invisible to it.
+ */
+export async function getJobCountsByCategory() {
+  const grouped = await prisma.job.groupBy({
+    by: ["category"],
+    where: activeJob,
+    _count: true,
+  });
+  return Object.fromEntries(grouped.map((g) => [g.category, g._count]));
+}
+
 export async function getJobsByCategory(category: string | null, limit = 3) {
   return prisma.job.findMany({
     where: { ...activeJob, ...(category ? { category } : {}) },
@@ -68,9 +88,13 @@ export async function getJobsByCategory(category: string | null, limit = 3) {
   });
 }
 
+// Only ever used by the public job-detail page — a CLOSED job (today, only
+// ever closed by admin moderation removal; see removeFlaggedListing) has no
+// other legitimate viewer, so it 404s like a deleted resource rather than
+// staying live at its existing/indexed/shared URL.
 export async function getJobById(id: string) {
   return prisma.job.findUnique({
-    where: { id },
+    where: { id, ...activeJob },
     include: { company: true, _count: { select: { applications: true } } },
   });
 }

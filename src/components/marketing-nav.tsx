@@ -6,15 +6,30 @@ import { useEffect, useRef, useState } from "react";
 
 const MENU_LINKS = [
   { label: "Find Work", href: "/jobs" },
-  { label: "Hire Talent", href: "/login?role=employer" },
+  // Signup, not login — every other "I want to hire" CTA on the site
+  // (hero, footer, this same overlay's bottom button) points at
+  // /signup?role=employer; this one was the odd one out, sending
+  // first-time visitors to a "Welcome back" login form instead.
+  { label: "Hire Talent", href: "/signup?role=employer" },
   { label: "Company Directory", href: "/companies" },
 ];
 
-export function MarketingNav() {
+const ROLE_HOME: Record<string, string> = {
+  SEEKER: "/dashboard",
+  EMPLOYER: "/employer",
+  ADMIN: "/admin",
+};
+
+export function MarketingNav({ viewerRole }: { viewerRole: "SEEKER" | "EMPLOYER" | "ADMIN" | null }) {
   const [open, setOpen] = useState(false);
   const overlayRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+  function close() {
+    setOpen(false);
+    menuButtonRef.current?.focus();
+  }
 
   useEffect(() => {
     if (!open) return;
@@ -22,7 +37,7 @@ export function MarketingNav() {
 
     function onKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") {
-        setOpen(false);
+        close();
         return;
       }
       if (e.key !== "Tab" || !overlayRef.current) return;
@@ -46,11 +61,6 @@ export function MarketingNav() {
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [open]);
-
-  function close() {
-    setOpen(false);
-    menuButtonRef.current?.focus();
-  }
 
   return (
     <>
@@ -115,20 +125,32 @@ export function MarketingNav() {
               style={{ animationDelay: "0.4s" }}
               className="animate-[menu-link-in_0.5s_ease_both] mt-12 flex gap-4"
             >
-              <Link
-                href="/login"
-                onClick={close}
-                className="rounded-md border border-cream/28 px-[22px] py-3 text-sm font-semibold text-cream"
-              >
-                Log in
-              </Link>
-              <Link
-                href="/signup?role=employer"
-                onClick={close}
-                className="rounded-md bg-accent px-5 py-3 text-sm font-semibold text-white"
-              >
-                Post a Job
-              </Link>
+              {viewerRole ? (
+                <Link
+                  href={ROLE_HOME[viewerRole]}
+                  onClick={close}
+                  className="rounded-md bg-accent px-5 py-3 text-sm font-semibold text-white"
+                >
+                  Go to Dashboard
+                </Link>
+              ) : (
+                <>
+                  <Link
+                    href="/login"
+                    onClick={close}
+                    className="rounded-md border border-cream/28 px-[22px] py-3 text-sm font-semibold text-cream"
+                  >
+                    Log in
+                  </Link>
+                  <Link
+                    href="/signup?role=employer"
+                    onClick={close}
+                    className="rounded-md bg-accent px-5 py-3 text-sm font-semibold text-white"
+                  >
+                    Post a Job
+                  </Link>
+                </>
+              )}
             </div>
           </div>
 

@@ -21,7 +21,8 @@ test("employer logs in, posts a job, and sees it in their postings", async ({ pa
   const uniqueTitle = `E2E Posted Job ${Date.now()}`;
   await page.locator("#title").fill(uniqueTitle);
   await page.locator("#category").selectOption("Delivery");
-  await page.locator("#payRate").fill("$25/hr");
+  await page.locator("#payAmount").fill("25");
+  await page.locator("#payType").selectOption("hourly");
   await page.locator("#location").fill("Test City, TC");
   await page.locator("#shift").fill("Mon-Fri, 9am-5pm");
   await page.locator("#description").fill("A fixture job posted by the e2e test suite.");

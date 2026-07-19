@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 const STATUS_COLOR: Record<string, string> = {
   APPLIED: "text-accent-hover",
   VIEWED: "text-text-faint",
-  INTERVIEW: "text-accent-hover",
+  INTERVIEW: "text-warning-text",
   HIRED: "text-success-text",
   REJECTED: "text-danger",
 };
@@ -50,6 +50,7 @@ export default async function SeekerDashboardPage({
       <div className="mb-6.5 flex border-b border-text-primary/14">
         <Link
           href="/dashboard?tab=applications"
+          aria-current={activeTab === "applications" ? "page" : undefined}
           className={`-mb-px border-b-2 px-4 py-2.5 font-serif text-sm ${
             activeTab === "applications" ? "border-accent font-medium text-text-primary" : "border-transparent text-text-faint"
           }`}
@@ -58,6 +59,7 @@ export default async function SeekerDashboardPage({
         </Link>
         <Link
           href="/dashboard?tab=saved"
+          aria-current={activeTab === "saved" ? "page" : undefined}
           className={`-mb-px border-b-2 px-4 py-2.5 font-serif text-sm ${
             activeTab === "saved" ? "border-accent font-medium text-text-primary" : "border-transparent text-text-faint"
           }`}
@@ -69,15 +71,19 @@ export default async function SeekerDashboardPage({
       {activeTab === "applications" ? (
         <div className="flex flex-col">
           {(seeker?.applications ?? []).map((app) => (
-            <div key={app.id} className="flex items-center justify-between border-t border-text-primary/12 py-4.5">
-              <div>
-                <div className="mb-0.5 font-serif text-lg">{app.job.title}</div>
-                <div className="text-[12.5px] text-text-muted">
+            <Link
+              key={app.id}
+              href={`/jobs/${app.job.id}`}
+              className="flex items-center justify-between gap-4 border-t border-text-primary/12 py-4.5"
+            >
+              <div className="min-w-0">
+                <div className="mb-0.5 truncate font-serif text-lg">{app.job.title}</div>
+                <div className="truncate text-[12.5px] text-text-muted">
                   {app.job.company.name} · Applied {relativeTime(app.appliedAt)}
                 </div>
               </div>
-              <span className={`text-xs font-medium ${STATUS_COLOR[app.status]}`}>{STATUS_LABEL[app.status]}</span>
-            </div>
+              <span className={`shrink-0 text-xs font-medium ${STATUS_COLOR[app.status]}`}>{STATUS_LABEL[app.status]}</span>
+            </Link>
           ))}
           {!seeker?.applications.length && (
             <div className="border-t border-text-primary/12 py-10 text-center text-sm text-text-muted">
@@ -95,15 +101,15 @@ export default async function SeekerDashboardPage({
             <Link
               key={job.id}
               href={`/jobs/${job.id}`}
-              className="flex items-center justify-between border-t border-text-primary/12 py-4.5"
+              className="flex items-center justify-between gap-4 border-t border-text-primary/12 py-4.5"
             >
-              <div>
-                <div className="mb-0.5 font-serif text-lg">{job.title}</div>
-                <div className="text-[12.5px] text-text-muted">
+              <div className="min-w-0">
+                <div className="mb-0.5 truncate font-serif text-lg">{job.title}</div>
+                <div className="truncate text-[12.5px] text-text-muted">
                   {job.company.name} · {job.location}
                 </div>
               </div>
-              <span className="font-serif text-lg">{job.payDisplay}</span>
+              <span className="shrink-0 font-serif text-lg">{job.payDisplay}</span>
             </Link>
           ))}
           {savedJobs.length === 0 && (

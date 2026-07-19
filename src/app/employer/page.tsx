@@ -10,7 +10,7 @@ const STATUS_STYLE: Record<string, string> = {
 const APPLICANT_STATUS_STYLE: Record<string, string> = {
   APPLIED: "text-accent-hover",
   VIEWED: "text-text-faint",
-  INTERVIEW: "text-accent-hover",
+  INTERVIEW: "text-warning-text",
   HIRED: "text-success-text",
   REJECTED: "text-danger",
 };
@@ -18,10 +18,10 @@ const APPLICANT_STATUS_STYLE: Record<string, string> = {
 export default async function EmployerDashboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ job?: string }>;
+  searchParams: Promise<{ job?: string; posted?: string }>;
 }) {
   const profile = await requireRole(["EMPLOYER"]);
-  const { job: jobParam } = await searchParams;
+  const { job: jobParam, posted } = await searchParams;
 
   const company = await prisma.company.findUnique({
     where: { ownerUserId: profile.id },
@@ -51,16 +51,27 @@ export default async function EmployerDashboardPage({
     ),
   );
 
-  const hasCriteria =
-    selectedJob &&
-    selectedJob.screeningCriteria &&
-    typeof selectedJob.screeningCriteria === "object" &&
-    Object.keys(selectedJob.screeningCriteria as object).length > 0;
+  // screeningCriteria is always stored as { raw: string } (see createJob),
+  // even when the employer left the criteria field blank — so checking
+  // Object.keys().length was always 1 > 0 regardless of actual content,
+  // making every ACTIVE job with applicants look "agent eligible" even
+  // with nothing for the agent to screen against.
+  const criteriaRaw =
+    selectedJob && selectedJob.screeningCriteria && typeof selectedJob.screeningCriteria === "object"
+      ? (selectedJob.screeningCriteria as { raw?: unknown }).raw
+      : undefined;
+  const hasCriteria = typeof criteriaRaw === "string" && criteriaRaw.trim().length > 0;
   const isAgentEligible = selectedJob && selectedJob.status === "ACTIVE" && applicants.length > 0 && hasCriteria;
 
   return (
     <div>
       <h1 className="mb-6 font-serif text-[28px] font-medium tracking-tight">Your job postings</h1>
+
+      {posted === "1" && selectedJob && (
+        <div className="mb-6 border border-success px-5 py-3.5 text-[13.5px] text-success-text">
+          &ldquo;{selectedJob.title}&rdquo; is live.
+        </div>
+      )}
 
       {jobs.length === 0 ? (
         <div className="border-t border-text-primary/14 py-10 text-center text-sm text-text-muted">
@@ -79,14 +90,14 @@ export default async function EmployerDashboardPage({
                 job.id === selectedJobId ? "outline outline-offset-4 outline-accent" : ""
               }`}
             >
-              <div>
-                <div className="mb-1 font-serif text-lg">{job.title}</div>
-                <div className="text-[12.5px] text-text-muted">
+              <div className="min-w-0">
+                <div className="mb-1 truncate font-serif text-lg">{job.title}</div>
+                <div className="truncate text-[12.5px] text-text-muted">
                   {job._count.applications} applicants · {newApplicantsByJob[job.id] ?? 0} new · Posted{" "}
                   {relativeTime(job.postedAt)}
                 </div>
               </div>
-              <div className="flex items-center gap-4">
+              <div className="flex shrink-0 items-center gap-4">
                 <span className={`text-xs font-medium ${STATUS_STYLE[job.status]}`}>
                   {job.status === "ACTIVE" ? "Active" : "Closed"}
                 </span>
@@ -126,18 +137,18 @@ export default async function EmployerDashboardPage({
           <div className="flex flex-col">
             {applicants.map((a) => (
               <div key={a.id} className="flex items-center justify-between border-t border-text-primary/12 py-4">
-                <div className="flex items-center gap-3.5">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#f0eee7] font-serif text-[13px]">
+                <div className="flex min-w-0 items-center gap-3.5">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#f0eee7] font-serif text-[13px]">
                     {initials(a.seeker.user.name)}
                   </div>
-                  <div>
-                    <div className="font-serif text-base">{a.seeker.user.name}</div>
-                    <div className="text-xs text-text-muted">
+                  <div className="min-w-0">
+                    <div className="truncate font-serif text-base">{a.seeker.user.name}</div>
+                    <div className="truncate text-xs text-text-muted">
                       Applied {relativeTime(a.appliedAt)} · ★ {a.seeker.rating.toFixed(1)}
                     </div>
                   </div>
                 </div>
-                <span className={`text-xs font-medium ${APPLICANT_STATUS_STYLE[a.status]}`}>
+                <span className={`shrink-0 text-xs font-medium ${APPLICANT_STATUS_STYLE[a.status]}`}>
                   {a.status === "APPLIED" ? "New" : a.status[0] + a.status.slice(1).toLowerCase()}
                 </span>
               </div>

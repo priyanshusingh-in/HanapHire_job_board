@@ -60,7 +60,13 @@ export default async function AiAgentPage({
   });
 
   const runSnapshot: RunSnapshot = latestRun
-    ? { id: latestRun.id, status: latestRun.status, currentStep: latestRun.currentStep, error: latestRun.error }
+    ? {
+        id: latestRun.id,
+        status: latestRun.status,
+        currentStep: latestRun.currentStep,
+        error: latestRun.error,
+        startedAt: latestRun.startedAt?.toISOString() ?? null,
+      }
     : null;
 
   const isDone = runSnapshot?.status === "DONE";

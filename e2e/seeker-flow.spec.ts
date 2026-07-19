@@ -17,7 +17,10 @@ test("seeker logs in, filters jobs, applies, and sees it in their dashboard", as
   const jobTitle = await page.locator('a[href^="/jobs/"]').first().innerText();
 
   await page.getByRole("button", { name: "Apply Now" }).first().click();
-  await expect(page.getByRole("button", { name: "Applied ✓" }).first()).toBeVisible();
+  // Generous timeout: the first server action hit right after a cold
+  // `next start` competes with the page's own just-opened Prisma
+  // connections and can take longer than the default 5s.
+  await expect(page.getByRole("button", { name: "Applied ✓" }).first()).toBeVisible({ timeout: 20_000 });
 
   await page.goto("/dashboard?tab=applications");
   await expect(page.getByText(jobTitle, { exact: true }).first()).toBeVisible();

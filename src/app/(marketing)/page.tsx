@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { HeroWidget } from "@/components/hero-widget";
-import { getFeaturedJobs, getJobsByCategory } from "@/lib/data/jobs";
+import { getFeaturedJobs, getJobCountsByCategory, getJobsByCategory } from "@/lib/data/jobs";
 import { getHeroWorkersData } from "@/lib/data/workers";
 import { prisma } from "@/lib/prisma";
 
@@ -22,12 +22,15 @@ const HOW_IT_WORKS = [
 ];
 
 export default async function LandingPage() {
-  const [heroJobs, featuredJobs, workersByCategory, totalWorkerCount] = await Promise.all([
-    getJobsByCategory(null, 100),
-    getFeaturedJobs(3),
-    getHeroWorkersData(),
-    prisma.seekerProfile.count(),
-  ]);
+  const [heroJobs, featuredJobs, workersByCategory, totalWorkerCount, jobCountsByCategory, totalJobCount] =
+    await Promise.all([
+      getJobsByCategory(null, 100),
+      getFeaturedJobs(3),
+      getHeroWorkersData(),
+      prisma.seekerProfile.count(),
+      getJobCountsByCategory(),
+      prisma.job.count({ where: { status: "ACTIVE" } }),
+    ]);
 
   return (
     <>
@@ -81,6 +84,8 @@ export default async function LandingPage() {
         }))}
         workersByCategory={workersByCategory}
         totalWorkerCount={totalWorkerCount}
+        jobCountsByCategory={jobCountsByCategory}
+        totalJobCount={totalJobCount}
       />
 
       <section className="mx-auto max-w-3xl px-8 pt-26 pb-22">
@@ -126,6 +131,11 @@ export default async function LandingPage() {
               <div className="font-serif text-xl whitespace-nowrap">{job.payDisplay}</div>
             </Link>
           ))}
+          {featuredJobs.length === 0 && (
+            <div className="border-t border-text-primary/14 py-12 text-center text-sm text-text-muted">
+              No jobs posted yet — check back soon.
+            </div>
+          )}
         </div>
       </section>
 

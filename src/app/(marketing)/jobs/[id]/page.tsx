@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { applyToJob, toggleSaveJob } from "@/lib/actions/seeker";
-import { getSeekerState } from "@/lib/data/seeker";
+import { applicationStatusLabel, getSeekerState } from "@/lib/data/seeker";
 import { getJobById, getSimilarJobs } from "@/lib/data/jobs";
+import { getCurrentProfile } from "@/lib/auth";
 
 export async function generateMetadata({
   params,
@@ -33,14 +34,22 @@ export default async function JobDetailPage({
   const job = await getJobById(id);
   if (!job) notFound();
 
-  const [similarJobs, seekerState] = await Promise.all([
+  const [similarJobs, seekerState, viewer] = await Promise.all([
     getSimilarJobs(job.category, job.id, 3),
     getSeekerState(),
+    getCurrentProfile(),
   ]);
 
   const saved = seekerState?.savedJobIds.includes(job.id) ?? false;
   const applied = seekerState?.appliedJobIds.includes(job.id) ?? false;
   const postedAgo = relativeTime(job.postedAt);
+  // Anonymous visitors still get real Apply/Save buttons (they redirect to
+  // login with a `next` back to this job — see requireRole/seeker actions).
+  // A signed-in employer/admin clicking the same buttons would previously
+  // just bounce silently to "/" with no explanation, since applying is a
+  // seeker-only action — showing the buttons as disabled instead of hiding
+  // them entirely keeps the layout stable and states plainly why.
+  const viewerIsNonSeeker = viewer !== null && viewer.role !== "SEEKER";
 
   return (
     <main className="mx-auto grid max-w-4xl grid-cols-1 gap-10 px-8 pt-24 pb-22 sm:grid-cols-[1fr_280px]">
@@ -75,26 +84,50 @@ export default async function JobDetailPage({
       <aside>
         <div className="sticky top-24 border border-text-primary/14 bg-white p-7">
           <div className="mb-1 font-serif text-[30px]">{job.payDisplay}</div>
-          <div className="mb-6 text-[13.5px] text-text-muted">{job._count.applications} people applied</div>
+          <div className="mb-6 text-[13.5px] text-text-muted">
+            {job._count.applications} {job._count.applications === 1 ? "person" : "people"} applied
+          </div>
 
-          <form action={applyToJob.bind(null, job.id)}>
+          {viewerIsNonSeeker ? (
             <button
-              type="submit"
-              disabled={applied}
-              className={
-                applied
-                  ? "w-full rounded-md bg-[#f0eee7] py-3.5 text-[15px] font-semibold text-text-muted"
-                  : "w-full rounded-md bg-accent py-3.5 text-[15px] font-semibold text-white"
-              }
+              type="button"
+              disabled
+              title="Applying is available for job seeker accounts"
+              className="w-full rounded-md bg-[#f0eee7] py-3.5 text-[15px] font-semibold text-text-muted"
             >
-              {applied ? "Applied ✓" : "Apply now"}
+              Apply now
             </button>
-          </form>
-          <form action={toggleSaveJob.bind(null, job.id)} className="mt-2.5">
-            <button type="submit" className="w-full rounded-md border border-text-primary/20 bg-white py-3 text-sm font-medium">
-              {saved ? "✓ Saved" : "+ Save for later"}
+          ) : (
+            <form action={applyToJob.bind(null, job.id)}>
+              <button
+                type="submit"
+                disabled={applied}
+                className={
+                  applied
+                    ? "w-full rounded-md bg-[#f0eee7] py-3.5 text-[15px] font-semibold text-text-muted"
+                    : "w-full rounded-md bg-accent py-3.5 text-[15px] font-semibold text-white"
+                }
+              >
+                {applicationStatusLabel(seekerState?.applicationStatusByJobId[job.id])}
+              </button>
+            </form>
+          )}
+          {viewerIsNonSeeker ? (
+            <button
+              type="button"
+              disabled
+              title="Saving is available for job seeker accounts"
+              className="mt-2.5 w-full rounded-md border border-text-primary/20 bg-white py-3 text-sm font-medium text-text-muted"
+            >
+              + Save for later
             </button>
-          </form>
+          ) : (
+            <form action={toggleSaveJob.bind(null, job.id)} className="mt-2.5">
+              <button type="submit" className="w-full rounded-md border border-text-primary/20 bg-white py-3 text-sm font-medium">
+                {saved ? "✓ Saved" : "+ Save for later"}
+              </button>
+            </form>
+          )}
 
           <div className="mt-6 border-t border-text-primary/12 pt-6 text-[13.5px] text-text-muted">
             ★ {job.company.rating.toFixed(1)} employer rating
@@ -103,7 +136,7 @@ export default async function JobDetailPage({
 
         {similarJobs.length > 0 && (
           <div className="mt-7">
-            <div className="mb-3.5 font-serif text-[15px] text-text-faint italic">Similar jobs</div>
+            <div className="mb-3.5 font-serif text-[15px] text-text-muted italic">Similar jobs</div>
             {similarJobs.map((sj) => (
               <Link key={sj.id} href={`/jobs/${sj.id}`} className="block border-t border-text-primary/14 py-3.5">
                 <div className="mb-0.5 font-serif text-[15px]">{sj.title}</div>

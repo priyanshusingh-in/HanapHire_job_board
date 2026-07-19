@@ -21,6 +21,9 @@ test("admin removes a flagged listing and it stays gone after reload", async ({ 
     .first();
   await expect(row).toBeVisible();
 
+  // Remove now confirms via a native confirm() dialog before submitting —
+  // Playwright auto-dismisses (cancels) unhandled dialogs by default.
+  page.once("dialog", (dialog) => dialog.accept());
   await row.getByRole("button", { name: "Remove" }).click();
   await expect(page.getByText("E2E Flagged Test Listing")).toHaveCount(0);
 

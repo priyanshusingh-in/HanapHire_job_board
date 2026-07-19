@@ -81,6 +81,13 @@ export default async function globalSetup() {
     );
     if (jobRes.rows.length > 0) {
       jobId = jobRes.rows[0].id;
+      // The admin-moderation test's own Remove action sets this job to
+      // CLOSED and its flag to resolved=true — reset both here so re-runs
+      // don't just keep piling a fresh "unresolved" flag onto a job that's
+      // already been closed by the previous run (that's how 11 duplicate
+      // "E2E Flagged Test Listing" rows accumulated in the dev DB).
+      await db.query(`update public.jobs set status = 'ACTIVE' where id = $1`, [jobId]);
+      await db.query(`delete from public.flagged_listings where "jobId" = $1`, [jobId]);
     } else {
       jobId = randomUUID();
       await db.query(
@@ -90,17 +97,11 @@ export default async function globalSetup() {
       );
     }
 
-    const flagRes = await db.query(
-      `select id from public.flagged_listings where "jobId" = $1 and resolved = false`,
-      [jobId],
+    await db.query(
+      `insert into public.flagged_listings (id, "jobId", reason, severity, resolved)
+       values ($1,$2,'E2E test flag','LOW',false)`,
+      [randomUUID(), jobId],
     );
-    if (flagRes.rows.length === 0) {
-      await db.query(
-        `insert into public.flagged_listings (id, "jobId", reason, severity, resolved)
-         values ($1,$2,'E2E test flag','LOW',false)`,
-        [randomUUID(), jobId],
-      );
-    }
   } finally {
     await db.end();
   }

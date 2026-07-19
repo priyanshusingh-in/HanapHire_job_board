@@ -37,10 +37,17 @@ export default async function CompaniesPage() {
             </div>
             <div className="text-right text-[13px] text-text-muted">
               <div>★ {company.rating.toFixed(1)}</div>
-              <div>{company._count.jobs} open roles</div>
+              <div>
+                {company._count.jobs} open {company._count.jobs === 1 ? "role" : "roles"}
+              </div>
             </div>
           </Link>
         ))}
+        {companies.length === 0 && (
+          <div className="border-t border-text-primary/14 py-12 text-center text-sm text-text-muted">
+            No companies listed yet.
+          </div>
+        )}
       </div>
     </main>
   );

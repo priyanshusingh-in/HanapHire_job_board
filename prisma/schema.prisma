@@ -59,6 +59,8 @@ enum ListingSeverity {
 
 enum NotificationType {
   SCREENING_COMPLETE
+  LISTING_REMOVED
+  ACCOUNT_STATUS_CHANGED
 }
 
 model Profile {

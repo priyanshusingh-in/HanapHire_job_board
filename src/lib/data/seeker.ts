@@ -13,12 +13,21 @@ export async function getSeekerState() {
 
   const seeker = await prisma.seekerProfile.findUnique({
     where: { userId: profile.id },
-    include: { applications: { select: { jobId: true } } },
+    include: { applications: { select: { jobId: true, status: true } } },
   });
-  if (!seeker) return { savedJobIds: [] as string[], appliedJobIds: [] as string[] };
+  if (!seeker) return { savedJobIds: [] as string[], appliedJobIds: [] as string[], applicationStatusByJobId: {} };
 
   return {
     savedJobIds: seeker.savedJobIds,
     appliedJobIds: seeker.applications.map((a) => a.jobId),
+    applicationStatusByJobId: Object.fromEntries(seeker.applications.map((a) => [a.jobId, a.status])),
   };
+}
+
+/** Apply-button label for a job the seeker has already applied to — REJECTED and HIRED get distinct copy instead of both looking identical to a still-open APPLIED. */
+export function applicationStatusLabel(status: string | undefined) {
+  if (status === "REJECTED") return "Not selected";
+  if (status === "HIRED") return "Hired!";
+  if (status) return "Applied ✓";
+  return "Apply Now";
 }

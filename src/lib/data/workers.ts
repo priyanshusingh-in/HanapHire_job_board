@@ -1,4 +1,5 @@
 import "server-only";
+import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { CATEGORIES } from "@/lib/constants";
 
@@ -35,12 +36,16 @@ export async function getWorkerCount(category: string | null) {
   if (!category) {
     return prisma.seekerProfile.count();
   }
-  const distinctSeekers = await prisma.application.findMany({
-    where: { job: { category } },
-    distinct: ["seekerId"],
-    select: { seekerId: true },
-  });
-  return distinctSeekers.length;
+  // A true COUNT DISTINCT instead of fetching every matching application
+  // row just to read `.length` — the same count, without transferring/
+  // materializing the whole row set for what's ultimately a single number.
+  const result = await prisma.$queryRaw<{ count: bigint }[]>`
+    SELECT COUNT(DISTINCT a."seekerId") AS count
+    FROM applications a
+    JOIN jobs j ON j.id = a."jobId"
+    WHERE j.category = ${category}
+  `;
+  return Number(result[0]?.count ?? 0);
 }
 
 export async function getWorkerCountsByCategory() {
@@ -56,7 +61,7 @@ export type HeroWorkerData = {
 };
 
 /** Per-category worker count + sample for the hero widget's "Hiring" mode, prefetched once for client-side filtering. */
-export async function getHeroWorkersData(): Promise<Record<string, HeroWorkerData>> {
+async function loadHeroWorkersData(): Promise<Record<string, HeroWorkerData>> {
   const entries = await Promise.all(
     CATEGORIES.map(async (category) => {
       const [count, sample] = await Promise.all([getWorkerCount(category), getWorkerSample(category, 3)]);
@@ -65,6 +70,14 @@ export async function getHeroWorkersData(): Promise<Record<string, HeroWorkerDat
   );
   return Object.fromEntries(entries);
 }
+
+// The landing page renders per-request (force-dynamic — see its own
+// comment for why), so without this cache these ~12 queries would re-run
+// on every single homepage visit instead of the ~once/minute they cost
+// under the ISR setup this replaced.
+export const getHeroWorkersData = unstable_cache(loadHeroWorkersData, ["hero-workers-data"], {
+  revalidate: 60,
+});
 
 function initials(name: string) {
   return (

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const SORT_OPTIONS: { value: string; label: string }[] = [
   { value: "relevant", label: "Most Relevant" },
@@ -13,8 +13,24 @@ const SORT_OPTIONS: { value: string; label: string }[] = [
 export function JobsSearchControls() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [search, setSearch] = useState(searchParams.get("q") ?? "");
+  const urlQuery = searchParams.get("q") ?? "";
+  const [search, setSearch] = useState(urlQuery);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Resyncs the input when the URL changes from outside this component's
+  // own debounced push (browser back/forward, a category link resetting
+  // the query, etc.) — without this, `search` only ever reflected whatever
+  // was typed at mount and could go stale relative to the actual results.
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setSearch(urlQuery);
+  }, [urlQuery]);
+
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, []);
 
   function pushParams(next: Record<string, string | null>) {
     const params = new URLSearchParams(searchParams.toString());
@@ -49,7 +65,7 @@ export function JobsSearchControls() {
       </label>
       <select
         id="job-sort"
-        defaultValue={searchParams.get("sort") ?? "relevant"}
+        value={searchParams.get("sort") ?? "relevant"}
         onChange={(e) => pushParams({ sort: e.target.value === "relevant" ? null : e.target.value })}
         className="rounded-md border border-text-primary/20 bg-white px-4 py-3.5 text-sm font-medium"
       >

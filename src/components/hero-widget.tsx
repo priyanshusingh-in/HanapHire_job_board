@@ -15,22 +15,44 @@ type HeroJob = {
 
 type WorkerData = { count: number; sample: { initial: string; name: string; rating: number; years: string }[] };
 
+// Tailwind needs literal class strings present in the source to pick them
+// up — can't interpolate `sm:grid-cols-${n}` dynamically — so the 1-3
+// column counts this widget ever shows are spelled out here instead of
+// computed into an inline style.
+const GRID_COLS: Record<number, string> = {
+  1: "sm:grid-cols-1",
+  2: "sm:grid-cols-2",
+  3: "sm:grid-cols-3",
+};
+function gridColsClass(n: number) {
+  return `grid-cols-1 ${GRID_COLS[Math.min(Math.max(n, 1), 3)]}`;
+}
+
 export function HeroWidget({
   jobs,
   workersByCategory,
   totalWorkerCount,
+  jobCountsByCategory,
+  totalJobCount,
 }: {
   jobs: HeroJob[];
   workersByCategory: Record<string, WorkerData>;
   totalWorkerCount: number;
+  jobCountsByCategory: Record<string, number>;
+  totalJobCount: number;
 }) {
   const [mode, setMode] = useState<"seeker" | "employer">("seeker");
   const [category, setCategory] = useState<string | null>(null);
 
   const isSeeker = mode === "seeker";
   const matches = (category ? jobs.filter((j) => j.category === category) : jobs).slice(0, 3);
-  const totalInCategory = category ? jobs.filter((j) => j.category === category).length : jobs.length;
-  const seeAllLabel = category ? `See all ${totalInCategory} ${category} jobs →` : "Browse all jobs →";
+  // True counts from the server, not derived from `jobs` (a sample capped
+  // at 100 for picking which few to display) — once total active listings
+  // exceed that cap, filtering the capped sample would undercount.
+  const totalInCategory = category ? (jobCountsByCategory[category] ?? 0) : totalJobCount;
+  const seeAllLabel = category
+    ? `See all ${totalInCategory} ${category} ${totalInCategory === 1 ? "job" : "jobs"} →`
+    : "Browse all jobs →";
   const seeAllHref = category ? `/jobs?category=${encodeURIComponent(category)}` : "/jobs";
 
   const workerData = category ? workersByCategory[category] : undefined;
@@ -51,6 +73,7 @@ export function HeroWidget({
             <button
               type="button"
               onClick={() => setMode("seeker")}
+              aria-pressed={isSeeker}
               className={`rounded-full px-5 py-2 text-[13.5px] whitespace-nowrap ${
                 isSeeker ? "bg-accent font-semibold text-white" : "text-text-muted"
               }`}
@@ -60,6 +83,7 @@ export function HeroWidget({
             <button
               type="button"
               onClick={() => setMode("employer")}
+              aria-pressed={!isSeeker}
               className={`rounded-full px-5 py-2 text-[13.5px] whitespace-nowrap ${
                 !isSeeker ? "bg-accent-ai font-semibold text-white" : "text-text-muted"
               }`}
@@ -81,6 +105,7 @@ export function HeroWidget({
                 key={c}
                 type="button"
                 onClick={() => setCategory(active ? null : c)}
+                aria-pressed={active}
                 className={`rounded-full border px-4 py-2 text-[13px] font-medium ${
                   active ? "border-accent bg-accent text-white" : "border-text-primary/20 text-text-body"
                 }`}
@@ -94,8 +119,7 @@ export function HeroWidget({
         {isSeeker ? (
           <>
             <div
-              className="grid gap-px border border-text-primary/10 bg-text-primary/10"
-              style={{ gridTemplateColumns: `repeat(${Math.max(matches.length, 1)}, 1fr)` }}
+              className={`grid gap-px border border-text-primary/10 bg-text-primary/10 ${gridColsClass(matches.length)}`}
             >
               {matches.map((job) => (
                 <Link key={job.id} href={`/jobs/${job.id}`} className="bg-white p-4.5">
@@ -122,8 +146,7 @@ export function HeroWidget({
           <>
             <div className="mb-4.5 text-center text-[15px] font-medium text-text-body">{workerCountLabel}</div>
             <div
-              className="grid gap-px border border-text-primary/10 bg-text-primary/10"
-              style={{ gridTemplateColumns: `repeat(${Math.max(workerSample.length, 1)}, 1fr)` }}
+              className={`grid gap-px border border-text-primary/10 bg-text-primary/10 ${gridColsClass(workerSample.length)}`}
             >
               {workerSample.map((w, i) => (
                 <div key={i} className="bg-white p-4.5 text-center">
