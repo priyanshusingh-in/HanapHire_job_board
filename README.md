@@ -1,36 +1,37 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# HanapHire
 
-## Getting Started
+On-demand job marketplace connecting gig/hourly workers with employers, with an AI Screening Agent that ranks applicants and drafts outreach. Next.js (App Router) + Supabase (Auth/Postgres/Storage/Realtime) + Prisma, built to run entirely on free tiers.
 
-First, run the development server:
+## Local development
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+1. Install dependencies: `npm install` (this also runs `prisma generate` via `postinstall`).
+2. Copy `.env.example` to `.env` and fill in your **dev** Supabase project's values (see the comments in that file for exactly where to find each one in the Supabase dashboard).
+3. Apply migrations: `npx prisma migrate deploy` (or `npx prisma migrate dev` for schema changes you're actively developing — note the shadow database can't validate migrations touching `auth.*`, so those must be applied with `migrate deploy`, not `migrate dev`; see the two migrations in `prisma/migrations/` for the pattern).
+4. Seed sample data: `npm run db:seed` (creates seeded seeker/employer/admin accounts — see the script's console output for login credentials).
+5. `npm run dev` and open [http://localhost:3000](http://localhost:3000).
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Branch strategy
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Three long-lived branches, each deployed to its own Vercel environment against its own Supabase project:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **`dev`** — integration branch. Feature branches merge here first.
+- **`qa`** — staging/verification. PR from `dev` once a set of changes is ready to verify. Protected: PR + passing CI required.
+- **`production`** — live. PR from `qa` once verified. Protected: PR + passing CI required.
 
-## Learn More
+CI (`.github/workflows/ci.yml`) runs lint + build on every PR/push to these three branches.
 
-To learn more about Next.js, take a look at the following resources:
+## Deploying (Vercel)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Each environment needs its own Supabase project (separate database, auth, storage) and its own set of environment variables in Vercel, scoped to that branch:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Vercel setting | Git branch | Supabase project |
+|---|---|---|
+| Production environment | `production` | production project |
+| Preview, scoped to `qa` | `qa` | qa project |
+| Preview, scoped to `dev` (or general Preview default) | `dev` | dev project |
 
-## Deploy on Vercel
+Set every variable from `.env.example` for each environment/branch scope in Vercel's Project Settings → Environment Variables. `NEXT_PUBLIC_SITE_URL` should be that environment's actual deployed URL.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The build command is `npm run vercel-build` (`prisma migrate deploy && next build`) — set this in Vercel's Project Settings → Build & Development Settings, or it's picked up automatically since it's a recognized script name. This means **every deploy automatically migrates that environment's own database** before building. The seed script never runs automatically — run `npm run db:seed` by hand against an environment only when you actually want seed data there (never against production).
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+In Vercel Project Settings → Git, set the **Production Branch** to `production`.
