@@ -7,7 +7,9 @@ export const metadata: Metadata = {
   description: "Browse verified employers hiring on HanapHire.",
 };
 
-export const revalidate = 60;
+// See the landing page (src/app/(marketing)/page.tsx) for why this is
+// force-dynamic instead of ISR — same build-time-DB-access problem.
+export const dynamic = "force-dynamic";
 
 export default async function CompaniesPage() {
   const companies = await listCompanies();

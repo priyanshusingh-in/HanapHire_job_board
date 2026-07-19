@@ -1,6 +1,13 @@
 import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
 
+// force-dynamic: without it this is generated once at `next build` time,
+// which both requires DB access during the build (breaks in environments
+// without DB credentials, e.g. CI) and freezes the sitemap's job listings
+// as of that build — new jobs posted afterward wouldn't appear until the
+// next deploy. See src/app/(marketing)/page.tsx for the same issue.
+export const dynamic = "force-dynamic";
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const site = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 

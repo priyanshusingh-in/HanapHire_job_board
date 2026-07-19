@@ -5,7 +5,15 @@ import { getFeaturedJobs, getJobsByCategory } from "@/lib/data/jobs";
 import { getHeroWorkersData } from "@/lib/data/workers";
 import { prisma } from "@/lib/prisma";
 
-export const revalidate = 60;
+// Dynamic, not ISR: this queries Prisma directly, and ISR's `revalidate`
+// still executes the page once during `next build` to produce the initial
+// static shell — which requires a live DB connection at build time. That
+// breaks any build environment without DB credentials (e.g. CI, which
+// deliberately doesn't have them) with an ECONNREFUSED prerender error.
+// Rendering per-request avoids depending on DB access at build time, and
+// keeps the hero's job/worker counts always current instead of up to 60s
+// stale.
+export const dynamic = "force-dynamic";
 
 const HOW_IT_WORKS = [
   { num: "01", title: "Browse & apply", body: "Search shifts by pay, distance, and schedule — apply in one tap." },
