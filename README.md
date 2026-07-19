@@ -12,25 +12,16 @@ On-demand job marketplace connecting gig/hourly workers with employers, with an 
 
 ## Branch strategy
 
-Three long-lived branches, each deployed to its own Vercel environment against its own Supabase project:
+Two long-lived branches, each deployed to its own Vercel project against its own Supabase project:
 
-- **`dev`** — integration branch. Feature branches merge here first.
-- **`qa`** — staging/verification. PR from `dev` once a set of changes is ready to verify. Protected: PR + passing CI required.
-- **`production`** — live. PR from `qa` once verified. Protected: PR + passing CI required.
+- **`dev`** — integration branch. Feature branches merge here first. Deploys to the `HanapHire-dev` Vercel project / dev Supabase project.
+- **`production`** — live. PR from `dev` once verified. Protected: PR + passing CI required. Deploys to the `HanapHire-prod` Vercel project / production Supabase project.
 
-CI (`.github/workflows/ci.yml`) runs lint + build on every PR/push to these three branches.
+CI (`.github/workflows/ci.yml`) runs lint + build on every PR/push to these two branches.
 
 ## Deploying (Vercel)
 
-Each environment needs its own Supabase project (separate database, auth, storage) and its own set of environment variables in Vercel, scoped to that branch:
-
-| Vercel setting | Git branch | Supabase project |
-|---|---|---|
-| Production environment | `production` | production project |
-| Preview, scoped to `qa` | `qa` | qa project |
-| Preview, scoped to `dev` (or general Preview default) | `dev` | dev project |
-
-Set every variable from `.env.example` for each environment/branch scope in Vercel's Project Settings → Environment Variables. `NEXT_PUBLIC_SITE_URL` should be that environment's actual deployed URL.
+Two separate Vercel projects (not one project with multiple environments) — `HanapHire-dev` tracking the `dev` branch, `HanapHire-prod` tracking the `production` branch. Each has its own full set of environment variables (from `.env.example`) pointing at its own Supabase project. `NEXT_PUBLIC_SITE_URL` should be that project's actual deployed URL.
 
 The build command is `npm run vercel-build` (`prisma migrate deploy && next build`) — set this in Vercel's Project Settings → Build & Development Settings, or it's picked up automatically since it's a recognized script name. This means **every deploy automatically migrates that environment's own database** before building. The seed script never runs automatically — run `npm run db:seed` by hand against an environment only when you actually want seed data there (never against production).
 
