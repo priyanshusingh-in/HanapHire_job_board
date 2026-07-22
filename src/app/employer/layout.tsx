@@ -12,6 +12,7 @@ export default async function EmployerLayout({
     <AppShell
       role="EMPLOYER"
       name={profile.name}
+      profileId={profile.id}
       navItems={[
         { label: "Dashboard", href: "/employer" },
         { label: "Post a Job", href: "/employer/jobs/new" },

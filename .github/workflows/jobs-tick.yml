@@ -1,0 +1,23 @@
+name: Screening job tick
+
+on:
+  schedule:
+    - cron: "* * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  tick-dev:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Tick dev
+        run: |
+          curl -sf -X POST "https://hanaphire-dev.vercel.app/api/jobs/tick" \
+            -H "Authorization: Bearer ${{ secrets.DEV_JOBS_TICK_SECRET }}"
+
+  tick-prod:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Tick prod
+        run: |
+          curl -sf -X POST "https://hanaphire-prod.vercel.app/api/jobs/tick" \
+            -H "Authorization: Bearer ${{ secrets.PROD_JOBS_TICK_SECRET }}"

@@ -24,10 +24,10 @@ export async function getCurrentProfile() {
  * recommends never relying on Proxy alone (a matcher change could silently
  * remove coverage), so every protected server function re-checks here too.
  */
-export async function requireRole(allowed: Role[]) {
+export async function requireRole(allowed: Role[], options?: { next?: string }) {
   const profile = await getCurrentProfile();
 
-  if (!profile) redirect("/login");
+  if (!profile) redirect(options?.next ? `/login?next=${encodeURIComponent(options.next)}` : "/login");
   if (profile.suspended || !allowed.includes(profile.role)) redirect("/");
 
   return profile;
