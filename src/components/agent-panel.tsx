@@ -3,7 +3,8 @@
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { startAgent, rescreenApplicants, STALE_RUN_MS } from "@/lib/actions/agent";
+import { startAgent, rescreenApplicants } from "@/lib/actions/agent";
+import { STALE_RUN_MS } from "@/lib/agent-constants";
 
 const STEP_LABELS = [
   "Reading job criteria & requirements",

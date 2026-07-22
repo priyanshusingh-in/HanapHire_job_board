@@ -6,21 +6,13 @@ import { requireRole } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@/generated/prisma/client";
 import { getBoss, SCREENING_QUEUE } from "@/lib/jobs/boss";
+import { STALE_RUN_MS } from "@/lib/agent-constants";
 
 async function ownedJob(profileId: string, jobId: string) {
   const job = await prisma.job.findFirst({ where: { id: jobId, company: { ownerUserId: profileId } } });
   if (!job) throw new Error("Job not found");
   return job;
 }
-
-// A run stuck RUNNING past this long never got picked up by a tick (the
-// fire-and-forget kickTick() failed, or — in production — the cron hasn't
-// hit yet). Without this, startAgent's concurrency guard would return the
-// same dead run forever with no way for the employer to retry, since the
-// UI only offers a retry button for FAILED runs, not RUNNING ones. Exported
-// so the client (agent-panel.tsx) can align its "offer a retry" timer to
-// the same threshold instead of guessing at an unrelated delay.
-export const STALE_RUN_MS = 3 * 60 * 1000;
 
 /**
  * Kicks the tick endpoint immediately after enqueueing so the run starts
