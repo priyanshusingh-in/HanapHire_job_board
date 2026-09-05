@@ -1,5 +1,7 @@
 # HanapHire
 
+## Live Link: https://hanaphire-5ixm0vouu-priyanshusingh-ins-projects.vercel.app/
+
 **On-demand hiring, made instant.** HanapHire is a two-sided marketplace that connects gig and hourly workers with the businesses that need them right now — same-day shifts, verified profiles, one-tap applications, and an AI agent that does an employer's first-pass candidate screening for them.
 
 It's built to demonstrate a production-grade job marketplace end to end: real authentication and authorization, a real background-job pipeline driving a real multi-provider LLM integration, real-time UI updates, and an admin console — running entirely on free-tier infrastructure (Next.js on Vercel, Supabase for auth/database/storage/realtime).
